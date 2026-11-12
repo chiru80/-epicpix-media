@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+:root {
+  --radius-lg: 8px;
+  --radius-md: 4px;
+  --radius-sm: 2px;
+  --primary: 210 100% 35%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 45 100% 50%;
+  --secondary-foreground: 222 47% 11%;
+  --accent: 280 100% 55%;
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --warning: 45 90% 50%;
+  --warning-foreground: 222 47% 11%;
+  --success: 150 50% 40%;
+  --success-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --muted: 210 10% 97%;
+  --muted-foreground: 215 16% 46%;
+  --border: 210 20% 98%;
+  --input: 210 20% 98%;
+  --ring: 210 100% 35%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --animation-duration: 0s;
+    --transition-duration: 0s;
+  }
+}
+
+/* Custom transitions */
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+  }
+
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    font-feature-settings: "rlig" "calt";
+    background: var(--background);
+    color: var(--foreground);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  img,
+  svg,
+  video,
+  canvas,
+  audio {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Focus visible */
+  *:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Skip link */
+  .skip-link {
+    position: absolute;
+    left: -999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+    z-index: 1000;
+  }
+
+  .skip-link:focus {
+    left: 0;
+    top: 0;
+    width: auto;
+    height: auto;
+    padding: 0.5rem;
+    background: var(--background);
+    color: var(--primary);
+  }
+}
+
+/* Form element utilities */
+@layer components {
+  .form-input {
+    @apply w-full rounded-md border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors;
+  }
+
+  .form-button {
+    @apply inline-flex items-center justify-center rounded-md font-medium transition-colors;
+  }
+
+  .form-button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+}

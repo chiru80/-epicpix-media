@@ -1,0 +1,38 @@
+{
+  "version": 4,
+  "builds": {
+    "/*": "next build",
+    "/api/(.*)": "node serverless"
+  },
+  "routes": {
+    "/api/(.*)": "api/:match*",
+    "/((?!_next|api|admin|client|freelancer).*)": "static",
+    "/admin/*": "static",
+    "/client/*": "static",
+    "/freelancer/*": "static"
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ],
+  "performance": {
+    "images": {
+      "domains": ["res.cloudinary.com", "images.unsplash.com"]
+    }
+  }
+}
