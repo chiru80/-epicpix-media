@@ -100,14 +100,17 @@ export default function ServicesPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <GlassBadge variant="primary" size="default" className="mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span>Guaranteed Production SLAs</span>
-          </GlassBadge>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-foreground mb-4">
-            Production Services & Packages
+          <div className="inline-flex mb-4">
+            <span className="apple-pill-btn apple-pill-secondary px-4 py-1 text-xs text-apple-lightgray font-medium border border-white/10">
+              <Sparkles className="w-3.5 h-3.5 text-apple-blue-vibrant mr-1.5" />
+              Guaranteed Studio SLAs
+            </span>
+          </div>
+          <h1 className="text-4xl sm:text-6xl font-display font-bold tracking-tight mb-4">
+            <span className="apple-text-titanium">Production</span>{" "}
+            <span className="apple-text-cosmic">Packages.</span>
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground">
+          <p className="text-base sm:text-lg text-apple-gray">
             Clear, upfront INR pricing with milestone protection. Backed by private media deliveries and 18% GST invoicing.
           </p>
         </div>
@@ -115,57 +118,55 @@ export default function ServicesPage() {
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {services.map((service) => (
-            <GlassCard
+            <div
               key={service.id}
-              variant={service.popular ? "elevated" : "default"}
-              glow={service.popular}
-              className={`p-7 flex flex-col justify-between group ${
-                service.popular ? "border-primary/40 ring-1 ring-primary/20" : ""
+              className={`apple-bento-card p-8 flex flex-col justify-between group ${
+                service.popular ? "border-blue-500/50 shadow-[0_0_35px_-5px_rgba(41,151,255,0.25)] ring-1 ring-blue-500/30" : ""
               }`}
             >
               <div>
                 {/* Top Badge & Tier */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center border border-white/10 group-hover:bg-primary/10 transition-colors">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-apple-blue-vibrant group-hover:bg-blue-500/10 transition-colors">
                     {getServiceIcon(service.id)}
                   </div>
                   {service.popular ? (
-                    <GlassBadge variant="primary" size="sm">
-                      ★ Most Popular
-                    </GlassBadge>
+                    <span className="text-[11px] px-3 py-1 rounded-full bg-apple-blue text-white font-semibold shadow-md shadow-blue-500/30">
+                      ★ Studio Choice
+                    </span>
                   ) : (
-                    <GlassBadge variant="default" size="sm">
+                    <span className="text-[11px] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-apple-lightgray font-mono">
                       {service.tier}
-                    </GlassBadge>
+                    </span>
                   )}
                 </div>
 
-                <h3 className="text-xl font-display font-bold text-foreground group-hover:text-primary transition-colors mb-2">
+                <h3 className="text-xl font-display font-bold text-white group-hover:text-apple-blue-vibrant transition-colors mb-2">
                   {service.name}
                 </h3>
-                <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
+                <p className="text-xs text-apple-gray mb-6 leading-relaxed">
                   {service.description}
                 </p>
 
                 {/* Price */}
-                <div className="pb-6 mb-6 border-b border-white/5">
+                <div className="pb-6 mb-6 border-b border-white/10">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-foreground">
+                    <span className="text-3xl font-bold font-display text-white">
                       {formatINRSimple(service.basePrice)}
                     </span>
-                    <span className="text-xs text-muted-foreground font-medium">+ 18% GST</span>
+                    <span className="text-xs text-apple-gray font-mono">+ 18% GST</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
-                    <Clock className="w-3.5 h-3.5 text-primary" />
-                    <span>Estimated Delivery: <strong>{service.delivery}</strong></span>
+                  <div className="flex items-center gap-1.5 text-xs text-apple-lightgray mt-2">
+                    <Clock className="w-3.5 h-3.5 text-apple-blue-vibrant" />
+                    <span>Estimated Turnaround: <strong>{service.delivery}</strong></span>
                   </div>
                 </div>
 
                 {/* Deliverables List */}
-                <div className="space-y-2.5 mb-8">
+                <div className="space-y-3 mb-8">
                   {service.deliverables.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Check className="w-3.5 h-3.5 text-primary flex-none" />
+                    <div key={idx} className="flex items-center gap-2.5 text-xs text-apple-lightgray">
+                      <Check className="w-3.5 h-3.5 text-apple-green flex-none" />
                       <span>{item}</span>
                     </div>
                   ))}
@@ -173,16 +174,16 @@ export default function ServicesPage() {
               </div>
 
               {/* Action */}
-              <GlassButton
+              <Link
                 href={`/order/configure?service=${service.id}`}
-                variant={service.popular ? "filled" : "glass"}
-                size="default"
-                icon={<ArrowRight className="w-4 h-4" />}
-                className="w-full justify-center"
+                className={`apple-pill-btn text-xs py-3 w-full font-medium flex items-center justify-center gap-2 ${
+                  service.popular ? "apple-pill-primary" : "apple-pill-secondary hover:bg-white/10"
+                }`}
               >
-                Configure & Book
-              </GlassButton>
-            </GlassCard>
+                <span>Configure & Book</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           ))}
         </div>
 

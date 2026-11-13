@@ -140,66 +140,47 @@ export default async function ExploreCreatorsPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <GlassBadge variant="primary" size="default" className="mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span>Verified Creator Directory</span>
-          </GlassBadge>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-foreground mb-4">
-            Discover Top Creative Talent
-          </h1>
-          <p className="text-base sm:text-lg text-muted-foreground">
-            Hire pre-vetted video editors, cinematographers, drone pilots, and photographers. Book with milestone escrow via YouPI.
-          </p>
-
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap justify-center gap-2 mt-8">
-            <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground shadow-sm shadow-primary/20 cursor-pointer">
-              All Talent
-            </span>
-            <span className="px-4 py-1.5 rounded-full text-xs font-medium glass-card text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-              Cinematography
-            </span>
-            <span className="px-4 py-1.5 rounded-full text-xs font-medium glass-card text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-              Video Editing
-            </span>
-            <span className="px-4 py-1.5 rounded-full text-xs font-medium glass-card text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-              Product Photography
-            </span>
-            <span className="px-4 py-1.5 rounded-full text-xs font-medium glass-card text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-              Drone Aerial
-            </span>
-            <span className="px-4 py-1.5 rounded-full text-xs font-medium glass-card text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-              Thumbnails
+          <div className="inline-flex mb-4">
+            <span className="apple-pill-btn apple-pill-secondary px-4 py-1 text-xs text-apple-lightgray font-medium border border-white/10">
+              <Sparkles className="w-3.5 h-3.5 text-apple-blue-vibrant mr-1.5" />
+              Verified Creator Network
             </span>
           </div>
+          <h1 className="text-4xl sm:text-6xl font-display font-bold tracking-tight mb-4">
+            <span className="apple-text-titanium">Elite Creator</span>{" "}
+            <span className="apple-text-cosmic">Directory.</span>
+          </h1>
+          <p className="text-base sm:text-lg text-apple-gray">
+            Hire pre-vetted video editors, cinematographers, drone pilots, and photographers. Book with milestone escrow via YouPI.
+          </p>
         </div>
 
         {/* Creator Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {creators.map((creator) => (
-            <GlassCard key={creator.id} variant="interactive" className="group flex flex-col justify-between">
+            <div key={creator.id} className="apple-bento-card group flex flex-col justify-between">
               <div>
                 {/* Media Preview Box */}
-                <div className="relative h-48 w-full bg-black/40 overflow-hidden">
+                <div className="relative h-48 w-full bg-[#161617] overflow-hidden">
                   <Image
                     src={creator.preview_image}
                     alt={`${creator.name}'s portfolio`}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-black/20" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20" />
 
                   {/* Rating & Verified Badges */}
                   <div className="absolute top-3 left-3 right-3 flex justify-between items-center">
-                    <GlassBadge variant="gold" size="sm" className="bg-black/60 backdrop-blur-md">
+                    <span className="text-xs px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white font-medium flex items-center gap-1">
                       <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                       <span>{creator.rating.toFixed(1)}</span>
-                    </GlassBadge>
+                    </span>
 
                     {creator.verified && (
-                      <GlassBadge variant="primary" size="sm" className="bg-sky-950/70 border-sky-400/30 text-sky-300">
-                        <ShieldCheck className="w-3 h-3 mr-1" /> Verified Pro
-                      </GlassBadge>
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-blue-950/70 border border-blue-500/30 text-blue-300 font-medium flex items-center gap-1 backdrop-blur-md">
+                        <ShieldCheck className="w-3 h-3" /> Verified Pro
+                      </span>
                     )}
                   </div>
                 </div>
@@ -208,20 +189,20 @@ export default async function ExploreCreatorsPage() {
                 <div className="p-6">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div>
-                      <h3 className="font-display text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+                      <h3 className="font-display text-xl font-bold text-white group-hover:text-apple-blue-vibrant transition-colors">
                         {creator.name}
                       </h3>
-                      <p className="text-xs text-sky-400 font-medium">{creator.specialization}</p>
+                      <p className="text-xs text-apple-blue-vibrant font-medium">{creator.specialization}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                  <div className="flex items-center gap-4 text-xs text-apple-gray mb-4">
                     <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+                      <MapPin className="w-3.5 h-3.5 text-apple-gray" />
                       {creator.location}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Briefcase className="w-3.5 h-3.5 text-muted-foreground" />
+                      <Briefcase className="w-3.5 h-3.5 text-apple-gray" />
                       {creator.completed_projects} projects
                     </span>
                   </div>
@@ -231,7 +212,7 @@ export default async function ExploreCreatorsPage() {
                     {creator.skills.slice(0, 3).map((skill, idx) => (
                       <span
                         key={idx}
-                        className="text-[11px] px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-muted-foreground"
+                        className="text-[11px] px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-apple-lightgray"
                       >
                         {skill}
                       </span>
@@ -241,21 +222,19 @@ export default async function ExploreCreatorsPage() {
               </div>
 
               {/* Price & Action Footer */}
-              <div className="p-6 pt-0 border-t border-white/5 flex items-center justify-between mt-auto">
+              <div className="p-6 pt-0 border-t border-white/10 flex items-center justify-between mt-auto">
                 <div>
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground block">Starting at</span>
-                  <span className="text-lg font-bold text-foreground">{formatINRSimple(creator.starting_price)}</span>
+                  <span className="text-[10px] uppercase tracking-wider text-apple-gray block">Starting at</span>
+                  <span className="text-lg font-bold text-white">{formatINRSimple(creator.starting_price)}</span>
                 </div>
-                <GlassButton
+                <Link
                   href={`/creators/${creator.id}`}
-                  variant="glass"
-                  size="sm"
-                  className="font-medium hover:border-primary/50 hover:text-primary"
+                  className="apple-pill-btn apple-pill-secondary text-xs px-4 py-2 font-medium hover:bg-white/10"
                 >
                   View Profile
-                </GlassButton>
+                </Link>
               </div>
-            </GlassCard>
+            </div>
           ))}
         </div>
       </div>

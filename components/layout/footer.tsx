@@ -2,128 +2,135 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-card">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {/* About */}
-          <div>
-            <h3 className="font-display text-lg mb-4">EpicPix Media</h3>
-            <p className="text-muted-foreground text-sm">
-              Professional media production services for businesses who demand excellence.
-              We create corporate videos, commercials, brand films, photography, and content
-              that captivates audiences and drives results.
+    <footer className="border-t border-white/10 bg-[#0a0a0c] text-apple-gray">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-14 text-xs">
+          {/* Brand Column */}
+          <div className="lg:col-span-2">
+            <Link href="/" className="flex items-center gap-2 mb-4 group">
+              <span className="w-2.5 h-2.5 rounded-full bg-apple-blue-vibrant shadow-[0_0_10px_#2997ff]" />
+              <span className="text-lg font-display font-semibold tracking-tight text-white group-hover:text-apple-blue-vibrant transition-colors">
+                EpicPix Media
+              </span>
+            </Link>
+            <p className="text-apple-gray text-xs leading-relaxed max-w-sm mb-4">
+              The premier media production marketplace. Connecting visionary enterprises with vetted commercial filmmakers, luxury product photographers, and aerial cinematographers.
+            </p>
+            <p className="text-[11px] text-apple-gray/70">
+              Secured with YouPI-PG Smart Escrow & Supabase Encrypted Storage.
             </p>
           </div>
 
-          {/* Navigation */}
+          {/* Navigation Column */}
           <div>
-            <h4 className="font-display text-sm mb-4">Navigation</h4>
-            <ul className="space-y-2 text-muted-foreground text-sm">
+            <h4 className="font-semibold text-white tracking-wide uppercase text-[11px] mb-4">
+              Explore
+            </h4>
+            <ul className="space-y-2.5">
               <li>
-                <Link href="/" className="hover:text-primary transition-colors">
+                <Link href="/" className="hover:text-white transition-colors">
                   Home
                 </Link>
               </li>
               <li>
-                <Link href="/explore" className="hover:text-primary transition-colors">
-                  Explore Creators
+                <Link href="/explore" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span>Creators</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-apple-blue/20 text-apple-blue-vibrant font-medium">New</span>
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-primary transition-colors">
-                  About
+                <Link href="/services" className="hover:text-white transition-colors">
+                  Services & Pricing
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-primary transition-colors">
-                  Services
+                <Link href="/portfolio" className="hover:text-white transition-colors">
+                  Selected Works
                 </Link>
               </li>
               <li>
-                <Link href="/portfolio" className="hover:text-primary transition-colors">
-                  Portfolio
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-primary transition-colors">
-                  Contact
+                <Link href="/about" className="hover:text-white transition-colors">
+                  About Studio
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Services */}
+          {/* Services Column */}
           <div>
-            <h4 className="font-display text-sm mb-4">Services</h4>
-            <ul className="space-y-2 text-muted-foreground text-sm">
+            <h4 className="font-semibold text-white tracking-wide uppercase text-[11px] mb-4">
+              Capabilities
+            </h4>
+            <ul className="space-y-2.5">
               <li>
-                <Link href="/services" className="hover:text-primary transition-colors">
-                  Video Production
+                <Link href="/order/configure?service=video_pro" className="hover:text-white transition-colors">
+                  Cinema Video 4K
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-primary transition-colors">
-                  Photography
+                <Link href="/order/configure?service=thumbnail" className="hover:text-white transition-colors">
+                  Product Photography
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-primary transition-colors">
-                  Content Creation
-                </Link>
-              </li>
-              <li>
-                <Link href="/services" className="hover:text-primary transition-colors">
-                  Post-Production
-                </Link>
-              </li>
-              <li>
-                <Link href="/services" className="hover:text-primary transition-colors">
+                <Link href="/order/configure?service=video_premium" className="hover:text-white transition-colors">
                   Drone Cinematography
                 </Link>
               </li>
+              <li>
+                <Link href="/services" className="hover:text-white transition-colors">
+                  DaVinci Color Grading
+                </Link>
+              </li>
+              <li>
+                <Link href="/services" className="hover:text-white transition-colors">
+                  Dolby Atmos Sound
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Connect Column */}
           <div>
-            <h4 className="font-display text-sm mb-4">Contact</h4>
-            <ul className="space-y-2 text-muted-foreground text-sm">
+            <h4 className="font-semibold text-white tracking-wide uppercase text-[11px] mb-4">
+              Get in Touch
+            </h4>
+            <ul className="space-y-2.5">
               <li>
-                <a href="mailto:contact@epicpix.media"
-                  className="hover:text-primary transition-colors"
+                <Link href="/contact" className="hover:text-white transition-colors">
+                  Studio Inquiry
+                </Link>
+              </li>
+              <li>
+                <a
+                  href="mailto:contact@epicpix.media"
+                  className="hover:text-white transition-colors"
                 >
                   contact@epicpix.media
                 </a>
               </li>
               <li>
-                <a href="tel:+1234567890"
-                  className="hover:text-primary transition-colors"
-                >
-                  +1 (234) 567-890
-                </a>
+                <Link href="/auth/signup?role=FREELANCER" className="hover:text-apple-blue-vibrant transition-colors font-medium">
+                  Join as Creator →
+                </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom */}
-        <div className="pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4 text-muted-foreground text-sm">
-          <p>2026 EpicPix Media. All rights reserved.</p>
-          <div className="flex gap-4">
-            <a href="https://twitter.com/epicpix_media"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors"
-            >
-              Twitter
-            </a>
-            <a href="https://linkedin.com/company/epicpix"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors"
-            >
-              LinkedIn
-            </a>
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-apple-gray">
+          <p>© 2026 EpicPix Media Inc. All rights reserved. Designed with Apple Keynote & Liquid Glass aesthetics.</p>
+          <div className="flex gap-6">
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Terms of Use
+            </Link>
+            <Link href="/contact" className="hover:text-white transition-colors">
+              Support
+            </Link>
           </div>
         </div>
       </div>

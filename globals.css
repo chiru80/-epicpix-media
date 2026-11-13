@@ -6,85 +6,85 @@
 
 /* Custom base styles */
 :root {
-  --radius-lg: 14px;
-  --radius-md: 10px;
-  --radius-sm: 6px;
-  --primary: 199 89% 48%; /* Electric Cyan/Sky accent for media branding */
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --primary: 211 100% 45%; /* Apple Blue #0071e3 */
   --primary-foreground: 0 0% 100%;
   --secondary: 43 75% 55%;
-  --secondary-foreground: 222 47% 11%;
-  --accent: 262 83% 63%;
-  --background: 222 47% 7%; /* Cinematic midnight dark */
-  --foreground: 210 40% 98%;
-  --card: 222 47% 10%;
-  --card-foreground: 210 40% 98%;
+  --secondary-foreground: 0 0% 10%;
+  --accent: 280 83% 60%; /* Apple Purple #af52de */
+  --background: 0 0% 0%; /* Apple Pure OLED Black #000000 */
+  --foreground: 0 0% 98%; /* Apple High-contrast #f5f5f7 */
+  --card: 0 0% 9%; /* Apple Bento Card Surface #161617 */
+  --card-foreground: 0 0% 98%;
   --warning: 38 92% 55%;
-  --warning-foreground: 222 47% 11%;
+  --warning-foreground: 0 0% 10%;
   --success: 142 71% 45%;
   --success-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --muted: 222 30% 14%;
-  --muted-foreground: 215 16% 65%;
-  --border: 222 30% 18%;
-  --input: 222 30% 18%;
-  --ring: 199 89% 48%;
+  --muted: 0 0% 11%; /* Apple Deep Surface #1d1d1f */
+  --muted-foreground: 240 2% 54%; /* Apple Iconic Gray #86868b */
+  --border: 0 0% 18%; /* Hairline border rgba(255,255,255,0.12) */
+  --input: 0 0% 14%;
+  --ring: 211 100% 50%;
   /* ds-allow-hardcode: shadow elevation tokens - semantic, theme-aware values */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.7);
   /* ds-allow-hardcode: accent glow token - brand-specific elevation */
-  --shadow-glow: 0 0 25px -4px rgba(56, 189, 248, 0.35);
+  --shadow-glow: 0 0 30px -4px rgba(41, 151, 255, 0.35);
 
-  /* EpicPix Liquid Glass Design Tokens */
-  --epicpix-glass: rgba(18, 24, 38, 0.72);
-  --epicpix-glass-elevated: rgba(24, 32, 50, 0.85);
-  --epicpix-glass-subtle: rgba(15, 23, 42, 0.45);
+  /* EpicPix Liquid Glass & Apple Bento Tokens */
+  --epicpix-glass: rgba(22, 22, 23, 0.75);
+  --epicpix-glass-elevated: rgba(29, 29, 31, 0.88);
+  --epicpix-glass-subtle: rgba(22, 22, 23, 0.45);
   --epicpix-glass-border: rgba(255, 255, 255, 0.12);
-  --epicpix-glass-border-hover: rgba(56, 189, 248, 0.45);
+  --epicpix-glass-border-hover: rgba(41, 151, 255, 0.5);
   --epicpix-glass-highlight: rgba(255, 255, 255, 0.08);
-  --epicpix-glass-blur: 16px;
-  --epicpix-glow-sky: rgba(56, 189, 248, 0.18);
-  --epicpix-glow-violet: rgba(147, 51, 234, 0.14);
-  --epicpix-glow-amber: rgba(245, 158, 11, 0.15);
+  --epicpix-glass-blur: 24px;
+  --epicpix-glow-sky: rgba(41, 151, 255, 0.22);
+  --epicpix-glow-violet: rgba(175, 82, 222, 0.18);
+  --epicpix-glow-amber: rgba(212, 175, 55, 0.16);
 }
 
 [data-theme="light"] {
-  --primary: 199 89% 44%;
+  --primary: 211 100% 45%;
   --primary-foreground: 0 0% 100%;
   --secondary: 43 75% 55%;
   --secondary-foreground: 222 47% 11%;
-  --accent: 262 83% 63%;
-  --background: 210 40% 98%;
-  --foreground: 222 47% 11%;
+  --accent: 280 83% 60%;
+  --background: 0 0% 98%;
+  --foreground: 0 0% 10%;
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 0 0% 10%;
   --warning: 38 92% 55%;
   --warning-foreground: 222 47% 11%;
   --success: 142 71% 40%;
   --success-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 46%;
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 199 89% 44%;
+  --muted: 0 0% 94%;
+  --muted-foreground: 0 0% 45%;
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+  --ring: 211 100% 45%;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 20px -5px rgba(56, 189, 248, 0.15);
+  --shadow-glow: 0 0 20px -5px rgba(0, 113, 227, 0.15);
 
-  --epicpix-glass: rgba(255, 255, 255, 0.78);
-  --epicpix-glass-elevated: rgba(255, 255, 255, 0.92);
-  --epicpix-glass-subtle: rgba(248, 250, 252, 0.65);
+  --epicpix-glass: rgba(255, 255, 255, 0.8);
+  --epicpix-glass-elevated: rgba(255, 255, 255, 0.94);
+  --epicpix-glass-subtle: rgba(245, 245, 247, 0.7);
   --epicpix-glass-border: rgba(0, 0, 0, 0.08);
-  --epicpix-glass-border-hover: rgba(56, 189, 248, 0.6);
-  --epicpix-glass-highlight: rgba(255, 255, 255, 0.6);
-  --epicpix-glass-blur: 16px;
-  --epicpix-glow-sky: rgba(56, 189, 248, 0.12);
-  --epicpix-glow-violet: rgba(147, 51, 234, 0.08);
-  --epicpix-glow-amber: rgba(245, 158, 11, 0.1);
+  --epicpix-glass-border-hover: rgba(0, 113, 227, 0.5);
+  --epicpix-glass-highlight: rgba(255, 255, 255, 0.8);
+  --epicpix-glass-blur: 24px;
+  --epicpix-glow-sky: rgba(0, 113, 227, 0.12);
+  --epicpix-glow-violet: rgba(175, 82, 222, 0.08);
+  --epicpix-glow-amber: rgba(212, 175, 55, 0.1);
 }
 
 [data-theme="light"] body {
@@ -111,7 +111,7 @@
   }
 
   body {
-    font-family: "Inter", system-ui, sans-serif; /* ds-allow-hardcode: system font stack - no token available for native fallbacks */
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Inter", system-ui, sans-serif;
     font-feature-settings: "rlig" "calt";
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
@@ -237,9 +237,87 @@
     z-index: 0;
     overflow: hidden;
     background:
-      radial-gradient(circle 600px at 15% 15%, var(--epicpix-glow-sky) 0%, transparent 70%),
-      radial-gradient(circle 500px at 85% 25%, var(--epicpix-glow-violet) 0%, transparent 70%),
-      radial-gradient(circle 700px at 50% 85%, var(--epicpix-glow-amber) 0%, transparent 70%);
-    opacity: 0.85;
+      radial-gradient(circle 700px at 50% 0%, rgba(41, 151, 255, 0.18) 0%, transparent 65%),
+      radial-gradient(circle 500px at 85% 20%, rgba(175, 82, 222, 0.12) 0%, transparent 60%),
+      radial-gradient(circle 800px at 20% 80%, rgba(0, 113, 227, 0.08) 0%, transparent 70%);
+    opacity: 0.9;
+  }
+
+  /* Apple Keynote & Bento Utilities */
+  .apple-text-titanium {
+    background: linear-gradient(180deg, #ffffff 20%, #d2d2d7 60%, #86868b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .apple-text-cosmic {
+    background: linear-gradient(135deg, #2997ff 0%, #af52de 50%, #ff2d55 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .apple-text-gold {
+    background: linear-gradient(135deg, #ffe082 0%, #d4af37 50%, #f5f5f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .apple-bento-card {
+    background: rgba(22, 22, 23, 0.78);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 28px;
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .apple-bento-card:hover {
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.8), 0 0 30px -4px rgba(41, 151, 255, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .apple-frosted-nav {
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .apple-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    font-weight: 500;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .apple-pill-primary {
+    background: #0071e3;
+    color: #ffffff;
+    box-shadow: 0 4px 14px 0 rgba(0, 113, 227, 0.4);
+  }
+
+  .apple-pill-primary:hover {
+    background: #0077ed;
+    box-shadow: 0 6px 20px 0 rgba(0, 113, 227, 0.6);
+    transform: scale(1.02);
+  }
+
+  .apple-pill-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f5f5f7;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(12px);
+  }
+
+  .apple-pill-secondary:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.28);
+    transform: scale(1.02);
   }
 }
