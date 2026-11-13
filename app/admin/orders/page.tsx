@@ -1,7 +1,9 @@
 import { createServerSupabaseClient } from "@/lib/supabase";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { formatINRSimple } from "@/lib/utils";
+import { ShieldCheck, ArrowLeft, ArrowRight, Eye, Briefcase } from "lucide-react";
+import { GlassCard, GlassPanel, GlassBadge, GlassButton } from "@/components/ui/glisse";
 
 export const dynamic = "force-dynamic";
 
@@ -55,119 +57,100 @@ export default async function AdminOrdersPage() {
   }
 
   return (
-    <section className="py-12 md:py-20 bg-background min-h-screen">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground">
-              Orders Management
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">Review, track, and update client orders</p>
+    <main className="p-6 sm:p-8 max-w-7xl mx-auto min-h-screen">
+      {/* Header */}
+      <GlassPanel className="p-6 mb-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-2xl font-display font-bold text-foreground">Orders Pipeline</h1>
+            <GlassBadge variant="primary" size="sm">
+              <span>{count} Total Orders</span>
+            </GlassBadge>
           </div>
-          <Link
-            href="/admin"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            ← Back to Dashboard
-          </Link>
+          <p className="text-xs text-muted-foreground">Admin order operations and fulfillment monitoring</p>
         </div>
 
-        {fetchError && (
-          <div className="mb-6 p-4 rounded-lg bg-warning/10 border border-warning/30 text-warning text-sm">
-            Database note: {fetchError}. Showing cached or empty view.
-          </div>
-        )}
+        <GlassButton href="/admin" variant="glass" size="sm" icon={<ArrowLeft className="w-3.5 h-3.5" />}>
+          Back to Overview
+        </GlassButton>
+      </GlassPanel>
 
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="font-display font-semibold text-lg">All Orders ({count || 0})</h2>
-
-          {/* Bulk actions dropdown */}
-          <div className="relative">
-            <select className="select select-sm border border-border rounded px-3 py-1.5 text-sm bg-card text-foreground">
-              <option>Bulk actions</option>
-              <option>Export CSV</option>
-            </select>
-          </div>
+      {fetchError && (
+        <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs">
+          Database note: {fetchError}. Showing cached or local view.
         </div>
+      )}
 
-        {orders.length === 0 && (
-          <div className="p-8 border border-border rounded-xl bg-card text-center">
-            <p className="text-muted-foreground mb-4">No orders placed yet.</p>
-            <Link href="/services" className="text-primary hover:underline font-medium text-sm">
-              Browse Services
-            </Link>
+      {/* Orders Data Grid */}
+      <GlassPanel className="p-6">
+        {orders.length === 0 ? (
+          <div className="text-center py-16">
+            <Briefcase className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-40" />
+            <h3 className="text-base font-display font-semibold text-foreground mb-1">No Orders in Database</h3>
+            <p className="text-xs text-muted-foreground">Orders placed by clients via the catalog will populate here.</p>
           </div>
-        )}
-
-        {orders.length > 0 && (
-          <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
-            <table className="min-w-full text-sm">
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-muted/50 border-b border-border">
-                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
-                    #
-                  </th>
-                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
-                    Client
-                  </th>
-                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
-                    Service
-                  </th>
-                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
-                    Total
-                  </th>
-                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
-                    Status
-                  </th>
-                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
-                    Payment
-                  </th>
-                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
-                    Actions
-                  </th>
+                <tr className="border-b border-white/10 text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">
+                  <th className="pb-3 px-3">#</th>
+                  <th className="pb-3 px-3">Order ID</th>
+                  <th className="pb-3 px-3">Client Contact</th>
+                  <th className="pb-3 px-3">Service & Tier</th>
+                  <th className="pb-3 px-3">Amount</th>
+                  <th className="pb-3 px-3">Fulfillment</th>
+                  <th className="pb-3 px-3">Payment</th>
+                  <th className="pb-3 px-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                {orders.map((order, index) => (
-                  <tr
-                    key={order.id}
-                    className="hover:bg-card/50 transition-colors"
-                  >
-                    <td className="py-4 px-4 text-muted-foreground">{index + 1}</td>
-                    <td className="py-4 px-4">
+              <tbody className="divide-y divide-white/5">
+                {orders.map((order, idx) => (
+                  <tr key={order.id} className="hover:bg-white/5 transition-colors">
+                    <td className="py-4 px-3 text-muted-foreground">{idx + 1}</td>
+                    <td className="py-4 px-3 font-mono font-medium text-foreground">
+                      #{order.id.slice(0, 8)}
+                    </td>
+                    <td className="py-4 px-3">
                       <div className="font-medium text-foreground">
-                        {order.clients?.name || "Client"}
+                        {order.clients?.name || order.client_notes?.split("(")[0]?.replace("Client: ", "") || "Client"}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {order.clients?.company || order.clients?.email || order.client_notes || "—"}
-                      </p>
+                      <div className="text-[10px] text-muted-foreground truncate max-w-xs">
+                        {order.clients?.email || order.client_notes || "—"}
+                      </div>
                     </td>
-                    <td className="py-4 px-4">
-                      <span className="capitalize font-medium text-foreground">
-                        {getServiceName(order.service_type)}
+                    <td className="py-4 px-3">
+                      <span className="font-medium text-foreground capitalize block">
+                        {order.service_type?.replace(/_/g, " ")}
                       </span>
-                      {order.package_tier && (
-                        <span className="text-xs ml-1 bg-primary/10 text-primary rounded px-1.5 py-0.5">
-                          {order.package_tier}
-                        </span>
-                      )}
+                      <span className="text-[10px] text-primary">{order.package_tier || "Standard"}</span>
                     </td>
-                    <td className="py-4 px-4 font-semibold text-foreground">
-                      ₹{Number(order.total_price).toLocaleString("en-IN")}
+                    <td className="py-4 px-3 font-bold text-foreground">
+                      {formatINRSimple(order.total_price)}
                     </td>
-                    <td className="py-4 px-4">
-                      <StatusBadge status={order.status} />
+                    <td className="py-4 px-3">
+                      <GlassBadge
+                        variant={order.status === "completed" ? "success" : order.status === "in_progress" ? "primary" : "default"}
+                        size="sm"
+                      >
+                        {order.status}
+                      </GlassBadge>
                     </td>
-                    <td className="py-4 px-4">
-                      <PaymentBadge status={order.payment_status} />
+                    <td className="py-4 px-3">
+                      <GlassBadge
+                        variant={order.payment_status === "paid" ? "success" : order.payment_status === "pending_verification" ? "warning" : "default"}
+                        size="sm"
+                      >
+                        {order.payment_status?.replace(/_/g, " ")}
+                      </GlassBadge>
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="py-4 px-3 text-right">
                       <Link
                         href={`/order/confirmation/${order.id}`}
-                        className="text-primary text-sm font-medium hover:underline"
-                        aria-label="View order"
+                        className="inline-flex items-center gap-1 text-primary hover:underline font-semibold"
                       >
-                        View Details
+                        <span>Workspace</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </td>
                   </tr>
@@ -176,83 +159,7 @@ export default async function AdminOrdersPage() {
             </table>
           </div>
         )}
-      </div>
-    </section>
+      </GlassPanel>
+    </main>
   );
 }
-
-// Status badge component
-function StatusBadge({
-  status,
-}: {
-  status: string;
-}) {
-  const variants: Record<string, string> = {
-    pending: "bg-gray-100 text-gray-800",
-    approved: "bg-primary/10 text-primary",
-    in_progress: "bg-blue-100 text-blue-800",
-    review: "bg-warning/10 text-warning",
-    revisions: "bg-purple-100 text-purple-800",
-    completed: "bg-success/10 text-success",
-    cancelled: "bg-destructive/10 text-destructive",
-  };
-
-  const baseClass = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
-
-  const label = status
-    ? status
-        .split("_")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ")
-    : "Unknown";
-
-  return (
-    <span className={cn(baseClass, variants[status] || "bg-gray-100 text-gray-800")}>
-      {label}
-    </span>
-  );
-}
-
-// Payment badge component
-function PaymentBadge({
-  status,
-}: {
-  status: string;
-}) {
-  const variants: Record<string, string> = {
-    pending: "bg-gray-100 text-gray-800",
-    payment_pending: "bg-warning/10 text-warning",
-    deposit_paid: "bg-blue-100 text-blue-800",
-    paid: "bg-success/10 text-success",
-    refunded: "bg-destructive/10 text-destructive",
-    failed: "bg-destructive/10 text-destructive",
-    pending_verification: "bg-warning/10 text-warning",
-  };
-
-  const baseClass = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
-
-  const label = status
-    ? status
-        .split("_")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ")
-    : "Unknown";
-
-  return (
-    <span className={cn(baseClass, variants[status] || "bg-gray-100 text-gray-800")}>
-      {label}
-    </span>
-  );
-}
-
-const getServiceName = (service: string): string => {
-  const names: Record<string, string> = {
-    thumbnail: "Thumbnail Creation",
-    video_basic: "Video Editing (Basic)",
-    video_pro: "Video Editing (Pro)",
-    video_premium: "Video Editing (Premium)",
-    color_grading: "Color Grading",
-    motion_graphics: "Motion Graphics",
-  };
-  return names[service] || service;
-};

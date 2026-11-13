@@ -2,10 +2,12 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { z } from "zod";
-import { formatINR, formatINRSimple, calculateDepositINR, calculateTotalWithGSTINR } from "@/lib/utils";
+import { formatINRSimple, calculateDepositINR, calculateTotalWithGSTINR } from "@/lib/utils";
 import { SERVICES_CATALOG } from "@/app/services/catalog";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase";
+import { Sparkles, Check, ArrowRight, ShieldCheck, Clock, Zap } from "lucide-react";
+import { GlassCard, GlassPanel, GlassBadge, GlassButton, GlassSwitch } from "@/components/ui/glisse";
 
 interface AddOn {
   id: string;
@@ -27,161 +29,111 @@ interface OrderFormState {
   rushDelivery: boolean;
 }
 
-// Rush delivery flat fee in INR
-const RUSH_DELIVERY_FEE = 2500; // ₹2,500
+const RUSH_DELIVERY_FEE = 2500;
 
-// Map service to add-ons from catalog
 const getAddOnsForService = (service: string): AddOn[] => {
   const catalogService = SERVICES_CATALOG[service as keyof typeof SERVICES_CATALOG];
   if (!catalogService) return [];
   return catalogService.addOns || [];
 };
 
-// Calculate base price from catalog
 const getBasePrice = (service: string): number => {
   const catalogService = SERVICES_CATALOG[service as keyof typeof SERVICES_CATALOG];
   return catalogService?.basePrice || 0;
 };
 
-// Get tier options
 const getTiersForService = (service: string): string[] => {
   const catalogService = SERVICES_CATALOG[service as keyof typeof SERVICES_CATALOG];
   const tier = (catalogService as any)?.tier;
   return tier ? [tier] : ["Standard"];
 };
 
-// Calculate total price with rush delivery
 const calculateTotal = (
   service: string,
   addOns: AddOn[],
   rushDelivery: boolean
 ): number => {
   let total = getBasePrice(service);
-  const addOnTotal = addOns.filter((a) => a.selected).reduce(
-    (sum, a) => sum + a.price,
-    0
-  );
+  const addOnTotal = addOns.filter((a) => a.selected).reduce((sum, a) => sum + a.price, 0);
   total += addOnTotal;
   if (rushDelivery) total += RUSH_DELIVERY_FEE;
   return total;
 };
 
-// Service name
 const getServiceName = (service: string): string => {
   const catalogService = SERVICES_CATALOG[service as keyof typeof SERVICES_CATALOG];
   return catalogService?.name || service;
 };
 
-// Initialize form state
-const initializeForm = (service: string): OrderFormState => ({
-  service,
-  tier: getTiersForService(service)[0] || "Standard",
-  clientName: "",
-  clientEmail: "",
-  clientPhone: "",
-  projectDescription: "",
-  deliveryNotes: "",
-  addOns: getAddOnsForService(service).map((a) => ({ ...a, selected: false })),
-  rushDelivery: false,
-});
-
-function OrderConfigurationContent() {
+function ConfigureOrderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const serviceParam = searchParams.get("service") || "thumbnail";
+  const serviceParam = searchParams.get("service") || "video_pro";
 
-  const [form, setForm] = useState<OrderFormState>(() =>
-    initializeForm(serviceParam)
-  );
+  const initializeForm = (svc: string): OrderFormState => ({
+    service: svc,
+    tier: getTiersForService(svc)[0] || "Standard",
+    clientName: "",
+    clientEmail: "",
+    clientPhone: "",
+    projectDescription: "",
+    deliveryNotes: "",
+    addOns: getAddOnsForService(svc).map((a) => ({ ...a, selected: false })),
+    rushDelivery: false,
+  });
+
+  const [form, setForm] = useState<OrderFormState>(() => initializeForm(serviceParam));
   const [total, setTotal] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Sync service from query param if changed
   useEffect(() => {
     if (serviceParam && serviceParam !== form.service && SERVICES_CATALOG[serviceParam as keyof typeof SERVICES_CATALOG]) {
       setForm(initializeForm(serviceParam));
     }
   }, [serviceParam, form.service]);
 
-  // Recalculate total when form changes
   useEffect(() => {
     setTotal(calculateTotal(form.service, form.addOns, form.rushDelivery));
   }, [form.service, form.addOns, form.rushDelivery]);
 
-  // Validation schema
   const formSchema = z.object({
     service: z.string(),
     tier: z.string(),
-    clientName: z.string().min(2, "Name must be at least 2 characters"),
-    clientEmail: z.string().email("Valid email required"),
+    clientName: z.string().min(2, "Client name must be at least 2 characters"),
+    clientEmail: z.string().email("Please enter a valid email address"),
     clientPhone: z.string().optional(),
     projectDescription: z.string().min(10, "Description must be at least 10 characters"),
     deliveryNotes: z.string().optional(),
     rushDelivery: z.boolean().default(false),
-    addOns: z.array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-        price: z.number(),
-        selected: z.boolean(),
-      })
-    ),
   });
 
-  const onSubmit = async () => {
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setSubmitting(true);
     setFormError(null);
     setFieldErrors({});
 
-    // Validate with Zod
-    const result = formSchema.safeParse({
-      ...form,
-      addOns: form.addOns.map((a) => ({ ...a, selected: a.selected })),
-    });
-
+    const result = formSchema.safeParse(form);
     if (!result.success) {
-      // Extract errors for accessible error summary
-      const errors = result.error.issues.map(issue => issue.message);
       const newFieldErrors: Record<string, string> = {};
-
-      if (result.error.issues.find(i => i.path[0] === 'clientName')) {
-        newFieldErrors.clientName = 'Client name must be at least 2 characters';
-      }
-      if (result.error.issues.find(i => i.path[0] === 'clientEmail')) {
-        newFieldErrors.clientEmail = 'Please enter a valid email address';
-      }
-      if (result.error.issues.find(i => i.path[0] === 'projectDescription')) {
-        newFieldErrors.projectDescription = 'Project description must be at least 10 characters';
-      }
-
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) newFieldErrors[issue.path[0].toString()] = issue.message;
+      });
       setFieldErrors(newFieldErrors);
-      setFormError(`Please fix the ${errors.length} error(s) below`);
-      setSubmitting(false);
-      return;
-    }
-
-    // Import supabase client
-    let supabase: any;
-    try {
-      const { createClient } = await import("@/lib/supabase");
-      supabase = createClient();
-    } catch (err) {
-      console.error("Failed to import supabase:", err);
-      setFormError("Failed to initialize order system. Please try again.");
+      setFormError("Please resolve the highlighted fields below.");
       setSubmitting(false);
       return;
     }
 
     try {
-      // Create order in Supabase with INR pricing
-      const { deposit, remaining } = calculateDepositINR(total);
+      const supabase = createClient();
       const gstDetails = calculateTotalWithGSTINR(total);
-
+      const { deposit, remaining } = calculateDepositINR(gstDetails.total);
       const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-      const { error, data } = await supabase
+      const { data, error } = await supabase
         .from("orders")
         .insert({
           client_id: currentUser?.id || null,
@@ -190,386 +142,309 @@ function OrderConfigurationContent() {
           status: "pending",
           payment_status: "pending",
           base_price: getBasePrice(form.service),
-          add_ons_price: form.addOns.filter((a) => a.selected).reduce(
-            (sum, a) => sum + a.price,
-            0
-          ),
-          total_price: gstDetails.total, // Total with GST
+          add_ons_price: form.addOns.filter((a) => a.selected).reduce((sum, a) => sum + a.price, 0),
+          total_price: gstDetails.total,
           deposit_percentage: 25,
           deposit_amount: deposit,
           remaining_balance: remaining,
           project_description: form.projectDescription,
           client_notes: `Client: ${form.clientName} (${form.clientEmail})`,
-          delivery_deadline: calculateDeadline(form.service, form.rushDelivery),
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Redirect to payment page
       if (data?.id) {
         router.push(`/order/pay/${data.id}`);
       } else {
         router.push("/services");
       }
-
-    } catch (err) {
+    } catch (err: any) {
       console.error("Order creation error:", err);
-      setFormError("Failed to create order. Please check the form and try again.");
+      setFormError(err.message || "Failed to create order. Please check inputs and retry.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Calculate delivery deadline
-  const calculateDeadline = (service: string, rushDelivery: boolean): string => {
-    const catalogService = SERVICES_CATALOG[service as keyof typeof SERVICES_CATALOG];
-    if (!catalogService) return new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
-
-    // Parse delivery time from catalog (e.g., "5 days" -> 5)
-    const deliveryStr = catalogService.delivery;
-    const days = parseInt(deliveryStr.split(" ")[0]) || 5;
-
-    // Rush delivery reduces by half
-    const actualDays = rushDelivery ? Math.ceil(days / 2) : days;
-
-    const date = new Date();
-    date.setDate(date.getDate() + actualDays);
-    return date.toISOString();
-  };
-
-  // Add-on click handler
-  const handleAddOnToggle = (addOnId: string) =>
+  const handleAddOnToggle = (id: string) => {
     setForm((prev) => ({
       ...prev,
-      addOns: prev.addOns.map((a) =>
-        a.id === addOnId
-          ? { ...a, selected: !a.selected }
-          : a
-      ),
+      addOns: prev.addOns.map((a) => (a.id === id ? { ...a, selected: !a.selected } : a)),
     }));
+  };
 
-  // Rush delivery toggle
-  const handleRushToggle = () =>
-    setForm((prev) => ({ ...prev, rushDelivery: !prev.rushDelivery }));
-
-  // Calculate GST and deposit for display
   const gstDetails = calculateTotalWithGSTINR(total);
   const { deposit, remaining } = calculateDepositINR(gstDetails.total);
 
   return (
-    <section className="py-12 md:py-20 bg-background">
-      <div className="max-w-2xl mx-auto px-4">
-        <h1 className="text-5xl md:text-6xl font-display mb-8">
-          Order & Pricing
-        </h1>
+    <main className="min-h-screen bg-background py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <GlassBadge variant="primary" size="default" className="mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span>Project Configurator</span>
+          </GlassBadge>
+          <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-3">
+            Configure Your Production
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Select packages, optional add-ons, and provide your creative brief.
+          </p>
+        </div>
 
-        {/* Error Summary - accessible error container */}
         {formError && (
-          <div
-            role="alert"
-            aria-live="polite"
-            className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
-          >
-            <p className="text-sm text-destructive font-medium">{formError}</p>
+          <div className="mb-8 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
+            {formError}
           </div>
         )}
 
-        {/* Summary card */}
-        <div className="p-6 bg-card rounded-xl mb-10">
-          <h3 className="text-xl font-display mb-4">Order Summary</h3>
+        <form onSubmit={onSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Form (2 cols) */}
+          <div className="lg:col-span-2 space-y-6">
+            <GlassPanel className="p-7">
+              <h3 className="font-display font-bold text-xl text-foreground mb-6">
+                1. Service & Package
+              </h3>
 
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">Service:</span>
-              <span className="font-medium">{getServiceName(form.service)}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Package:</span>
-              <span className="font-medium">{form.tier}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Client:</span>
-              <span className="font-medium">{form.clientName || "TBD"}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Email:</span>
-              <span className="font-medium font-normal underline">
-                {form.clientEmail || "TBD"}
-              </span>
-            </div>
-          </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-2">
+                    Selected Service
+                  </label>
+                  <select
+                    value={form.service}
+                    onChange={(e) => setForm(initializeForm(e.target.value))}
+                    className="w-full h-11 rounded-xl bg-black/50 border border-white/10 px-4 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all backdrop-blur-md"
+                  >
+                    {Object.values(SERVICES_CATALOG).map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({formatINRSimple(s.basePrice)})
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-          {/* Add-ons list */}
-          <div className="mt-4 pt-4 border-t">
-            {form.addOns.filter((a) => a.selected).map((addOn) => (
-              <div
-                key={addOn.id}
-                className="flex justify-between text-muted-foreground text-sm py-1"
-              >
-                <span>{addOn.name}</span>
-                <span>{formatINRSimple(addOn.price)}</span>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-2">
+                    Package Tier
+                  </label>
+                  <div className="flex gap-2">
+                    {getTiersForService(form.service).map((tier) => (
+                      <span
+                        key={tier}
+                        className="px-4 py-2 rounded-xl text-xs font-semibold bg-primary/20 text-primary border border-primary/30"
+                      >
+                        {tier} Tier
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
-            ))}
-            {form.rushDelivery && (
-              <div className="flex justify-between text-muted-foreground text-sm py-1">
-                <span>Rush Delivery</span>
-                <span>{formatINRSimple(RUSH_DELIVERY_FEE)}</span>
-              </div>
-            )}
-          </div>
+            </GlassPanel>
 
-          <div className="mt-4 pt-4 border-t space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal:</span>
-              <span className="font-medium">{formatINRSimple(total)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">GST (18%):</span>
-              <span className="font-medium">{formatINRSimple(gstDetails.gst)}</span>
-            </div>
-            <div className="flex justify-between text-lg font-bold text-primary pt-2 border-t">
-              <span>Total with GST:</span>
-              <span>{formatINRSimple(gstDetails.total)}</span>
-            </div>
-            <div className="flex justify-between text-sm pt-2">
-              <span className="text-muted-foreground">Deposit (25%):</span>
-              <span className="font-medium">{formatINRSimple(deposit)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Remaining:</span>
-              <span className="font-medium">{formatINRSimple(remaining)}</span>
-            </div>
-          </div>
-        </div>
+            <GlassPanel className="p-7">
+              <h3 className="font-display font-bold text-xl text-foreground mb-6">
+                2. Add-ons & Fast Delivery
+              </h3>
 
-        {/* Form */}
-        <form onSubmit={onSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">Service</label>
-            <input
-              type="hidden"
-              name="service"
-              value={form.service}
-            />
-            <p className="text-muted-foreground text-sm">
-              {getServiceDescription(form.service)}
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Package Tier</label>
-            <div className="w-full flex justify-between items-center rounded-md border border-input px-4 py-3 bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
-              <span>{form.tier}</span>
-              <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {getTiersForService(form.service).map((tier) => (
-                <button
-                  key={tier}
-                  type="button"
-                  onClick={() => setForm({ ...form, tier })}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-w-[80px] text-center"
-                  tabIndex={0}
-                  aria-pressed={form.tier === tier}
-                >
-                  {tier}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Client Name</label>
-            <input
-              type="text"
-              name="clientName"
-              onChange={(e) =>
-                setForm({ ...form, clientName: e.target.value })
-              }
-              required
-              className="w-full rounded-md border border-input px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors"
-              placeholder="Your name"
-            />
-            {fieldErrors.clientName && (
-              <p className="text-sm text-destructive mt-1" role="alert">{fieldErrors.clientName}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
-            <input
-              type="email"
-              name="clientEmail"
-              onChange={(e) =>
-                setForm({ ...form, clientEmail: e.target.value })
-              }
-              required
-              className="w-full rounded-md border border-input px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors"
-              placeholder="you@email.com"
-            />
-            {fieldErrors.clientEmail && (
-              <p className="text-sm text-destructive mt-1" role="alert">{fieldErrors.clientEmail}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Phone (optional)</label>
-            <input
-              type="tel"
-              name="clientPhone"
-              onChange={(e) =>
-                setForm({ ...form, clientPhone: e.target.value })
-              }
-              className="w-full rounded-md border border-input px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors"
-              placeholder="+91 98765 43210"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Project Description
-            </label>
-            <textarea
-              name="projectDescription"
-              onChange={(e) =>
-                setForm({ ...form, projectDescription: e.target.value })
-              }
-              required
-              rows={3}
-              className="w-full rounded-md border border-input px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-none transition-colors"
-              placeholder="Describe your project... What type of video? For which platform? Any specific requirements?"
-            />
-            {fieldErrors.projectDescription && (
-              <p className="text-sm text-destructive mt-1" role="alert">{fieldErrors.projectDescription}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Delivery Notes
-            </label>
-            <textarea
-              name="deliveryNotes"
-              onChange={(e) =>
-                setForm({ ...form, deliveryNotes: e.target.value })
-              }
-              rows={2}
-              className="w-full rounded-md border border-input px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-none transition-colors"
-              placeholder="Any specific requirements, brand guidelines, etc."
-            />
-          </div>
-
-          {/* Add-ons section */}
-          <div className="mt-8">
-            <h3 className="text-lg font-display mb-4">Add-ons</h3>
-
-            {form.service === "thumbnail" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {getAddOnsForService("thumbnail").map((addOn) => (
-                  <button
+              <div className="space-y-3 mb-6">
+                {form.addOns.map((addOn) => (
+                  <div
                     key={addOn.id}
-                    type="button"
                     onClick={() => handleAddOnToggle(addOn.id)}
-                    className="flex justify-between items-center w-full border rounded-lg p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    style={{
-                      borderColor: form.addOns.find((a) => a.id === addOn.id)?.selected
-                        ? "hsl(var(--accent))"
-                        : "hsl(var(--border))",
-                      backgroundColor: form.addOns.find((a) => a.id === addOn.id)?.selected
-                        ? "hsl(var(--accent)/5)"
-                        : "transparent",
-                    }}
+                    className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                      addOn.selected
+                        ? "bg-primary/10 border-primary/40 ring-1 ring-primary/20"
+                        : "bg-black/30 border-white/5 hover:border-white/15"
+                    }`}
                   >
                     <div>
-                      <span className="font-medium">{addOn.name}</span>
-                      <div className="text-xs text-muted-foreground mt-0.5">{addOn.description}</div>
+                      <span className="text-sm font-semibold text-foreground block">{addOn.name}</span>
+                      {addOn.description && (
+                        <span className="text-xs text-muted-foreground">{addOn.description}</span>
+                      )}
                     </div>
-                    <span className="text-accent font-medium ml-4">{formatINRSimple(addOn.price)}</span>
-                  </button>
+                    <span className="text-sm font-bold text-sky-400">
+                      +{formatINRSimple(addOn.price)}
+                    </span>
+                  </div>
                 ))}
               </div>
-            )}
 
-            {["video_basic", "video_pro", "video_premium", "color_grading", "motion_graphics"].map((serviceKey) => (
-              form.service === serviceKey && (
-                <div key={serviceKey} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {getAddOnsForService(serviceKey).map((addOn) => (
-                    <button
-                      key={addOn.id}
-                      type="button"
-                      onClick={() => handleAddOnToggle(addOn.id)}
-                      className="flex justify-between items-center w-full border rounded-lg p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                      style={{
-                        borderColor: form.addOns.find((a) => a.id === addOn.id)?.selected
-                          ? "hsl(var(--accent))"
-                          : "hsl(var(--border))",
-                        backgroundColor: form.addOns.find((a) => a.id === addOn.id)?.selected
-                          ? "hsl(var(--accent)/5)"
-                          : "transparent",
-                      }}
-                    >
-                      <div>
-                        <span className="font-medium">{addOn.name}</span>
-                        {addOn.description && <div className="text-xs text-muted-foreground mt-0.5">{addOn.description}</div>}
-                      </div>
-                      <span className="text-accent font-medium ml-4">{formatINRSimple(addOn.price)}</span>
-                    </button>
-                  ))}
+              <div className="p-4 rounded-xl glass-card border-white/10 flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-semibold text-foreground block">⚡ Rush Delivery</span>
+                  <span className="text-xs text-muted-foreground">Reduces standard delivery turnaround by ~50%</span>
                 </div>
-              )
-            ))}
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-primary">+{formatINRSimple(RUSH_DELIVERY_FEE)}</span>
+                  <input
+                    type="checkbox"
+                    checked={form.rushDelivery}
+                    onChange={(e) => setForm((prev) => ({ ...prev, rushDelivery: e.target.checked }))}
+                    className="w-5 h-5 rounded border-white/20 text-primary focus:ring-primary/40"
+                  />
+                </div>
+              </div>
+            </GlassPanel>
 
-            <div className="mt-6 flex items-start gap-3">
-              <input
-                type="checkbox"
-                name="rushDelivery"
-                onChange={(e) => handleRushToggle()}
-                id="rush"
-                className="h-4 w-4 rounded border border-input focus:ring-2 focus:ring-ring focus:ring-offset-0 text-primary"
-                checked={form.rushDelivery}
-              />
-              <label htmlFor="rush" className="text-sm text-foreground">
-                Rush Delivery (+{formatINRSimple(RUSH_DELIVERY_FEE)}, reduces delivery time by ~50%)
-              </label>
-            </div>
+            <GlassPanel className="p-7">
+              <h3 className="font-display font-bold text-xl text-foreground mb-6">
+                3. Creative Brief & Contact
+              </h3>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-2">
+                      Your Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={form.clientName}
+                      onChange={(e) => setForm({ ...form, clientName: e.target.value })}
+                      className="w-full h-11 px-4 rounded-xl bg-black/40 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50"
+                      placeholder="e.g. Vikram Singhania"
+                    />
+                    {fieldErrors.clientName && (
+                      <p className="text-xs text-destructive mt-1">{fieldErrors.clientName}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={form.clientEmail}
+                      onChange={(e) => setForm({ ...form, clientEmail: e.target.value })}
+                      className="w-full h-11 px-4 rounded-xl bg-black/40 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50"
+                      placeholder="name@company.com"
+                    />
+                    {fieldErrors.clientEmail && (
+                      <p className="text-xs text-destructive mt-1">{fieldErrors.clientEmail}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-2">
+                    Project Brief & Goals *
+                  </label>
+                  <textarea
+                    rows={4}
+                    required
+                    value={form.projectDescription}
+                    onChange={(e) => setForm({ ...form, projectDescription: e.target.value })}
+                    className="w-full p-4 rounded-xl bg-black/40 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50 resize-none"
+                    placeholder="Describe your creative requirements, target platforms (YouTube, Reels, TV), branding guidelines, and links to raw assets..."
+                  />
+                  {fieldErrors.projectDescription && (
+                    <p className="text-xs text-destructive mt-1">{fieldErrors.projectDescription}</p>
+                  )}
+                </div>
+              </div>
+            </GlassPanel>
           </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded-md bg-primary px-6 py-4 text-base font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {submitting ? "Processing..." : `Proceed to Payment (${formatINRSimple(deposit)} deposit)`}
-          </button>
+          {/* Pricing & Checkout Summary Sidebar (1 col) */}
+          <div className="space-y-6">
+            <GlassPanel glow className="p-6 sticky top-24">
+              <h3 className="font-display font-bold text-lg text-foreground mb-4">
+                Order Summary
+              </h3>
+
+              <div className="space-y-3 text-xs pb-4 border-b border-white/10">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Service Base</span>
+                  <span className="text-foreground font-medium">{formatINRSimple(getBasePrice(form.service))}</span>
+                </div>
+
+                {form.addOns.filter((a) => a.selected).map((a) => (
+                  <div key={a.id} className="flex justify-between text-muted-foreground">
+                    <span>+ {a.name}</span>
+                    <span>{formatINRSimple(a.price)}</span>
+                  </div>
+                ))}
+
+                {form.rushDelivery && (
+                  <div className="flex justify-between text-sky-400">
+                    <span>+ Rush Delivery</span>
+                    <span>{formatINRSimple(RUSH_DELIVERY_FEE)}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2 py-4 border-b border-white/10 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-foreground font-semibold">{formatINRSimple(total)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">GST (18%)</span>
+                  <span className="text-foreground font-semibold">{formatINRSimple(gstDetails.gst)}</span>
+                </div>
+                <div className="flex justify-between text-base font-bold text-primary pt-2">
+                  <span>Total with Tax:</span>
+                  <span>{formatINRSimple(gstDetails.total)}</span>
+                </div>
+              </div>
+
+              <div className="py-4 space-y-1 text-xs">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Escrow Deposit (25%):</span>
+                  <strong className="text-foreground">{formatINRSimple(deposit)}</strong>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Remaining on Delivery:</span>
+                  <span>{formatINRSimple(remaining)}</span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:brightness-110 shadow-lg shadow-primary/25 border border-primary/40 flex items-center justify-center gap-2 transition-all disabled:opacity-50 mt-4"
+              >
+                {submitting ? (
+                  <span>Generating Order...</span>
+                ) : (
+                  <>
+                    <span>Proceed to Escrow Pay</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+
+              <div className="mt-4 text-center">
+                <span className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Backed by YouPI-PG Escrow Protection</span>
+                </span>
+              </div>
+            </GlassPanel>
+          </div>
         </form>
       </div>
-    </section>
+    </main>
   );
 }
 
-// Helper: get service description
-const getServiceDescription = (service: string): string => {
-  const catalogService = SERVICES_CATALOG[service as keyof typeof SERVICES_CATALOG];
-  return catalogService?.description || "";
-};
-
-export default function OrderConfigurationPage() {
+export default function ConfigureOrderPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background p-8 flex items-center justify-center">
-          <div className="text-center">
-            <div className="rounded-full border-b-2 border-primary mx-auto mb-6 animate-spin" style={{ width: 40, height: 40 }}></div>
-            <p className="text-muted-foreground">Loading order configuration...</p>
-          </div>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <p className="text-muted-foreground text-sm">Loading configurator...</p>
         </div>
       }
     >
-      <OrderConfigurationContent />
+      <ConfigureOrderContent />
     </Suspense>
   );
 }

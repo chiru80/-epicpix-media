@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { X as MenuX, Menu as MenuIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { X as MenuX, Menu as MenuIcon, Sparkles } from "lucide-react";
+import { GlassButton } from "@/components/ui/glisse";
 import { createClient } from "@/lib/supabase";
 
 export function Header() {
@@ -46,146 +46,198 @@ export function Header() {
   const dashboardLink = role === "ADMIN" ? "/admin" : role === "FREELANCER" ? "/freelancer" : "/dashboard";
 
   return (
-    <header className="border-b border-border bg-card sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header className="sticky top-0 z-50 px-4 sm:px-6 lg:px-8 pt-3 pb-2">
+      <div className="max-w-7xl mx-auto">
+        <div className="glass-card rounded-2xl px-5 sm:px-6 h-16 flex items-center justify-between shadow-lg shadow-black/20 border border-white/10 backdrop-blur-xl">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-display font-bold text-primary">EpicPix</span>
-            <span className="text-base text-foreground">Media</span>
+          <Link href="/" className="flex items-center gap-2 group">
+            <span className="text-2xl font-display font-bold text-primary group-hover:brightness-110 transition-all">
+              EpicPix
+            </span>
+            <span className="text-sm font-medium tracking-wider uppercase text-foreground/80">
+              Media
+            </span>
           </Link>
 
-          {/* Mobile Menu Button */}
-          <Button
-            onClick={toggleMenu}
-            size="icon"
-            className="md:hidden p-2"
-            aria-label="Open navigation menu"
-          >
-            {isMenuOpen ? <MenuX className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
-          </Button>
-
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+          <nav className="hidden md:flex items-center gap-7">
+            <Link
+              href="/"
+              className="text-foreground/80 hover:text-primary transition-colors text-sm font-medium"
+            >
               Home
             </Link>
-            <Link href="/about" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
-              About
+            <Link
+              href="/explore"
+              className="text-foreground/80 hover:text-primary transition-colors text-sm font-medium flex items-center gap-1.5"
+            >
+              <span>Explore</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
             </Link>
-            <Link href="/services" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link
+              href="/services"
+              className="text-foreground/80 hover:text-primary transition-colors text-sm font-medium"
+            >
               Services
             </Link>
-            <Link href="/portfolio" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link
+              href="/portfolio"
+              className="text-foreground/80 hover:text-primary transition-colors text-sm font-medium"
+            >
               Portfolio
             </Link>
-            <Link href="/contact" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+            <Link
+              href="/about"
+              className="text-foreground/80 hover:text-primary transition-colors text-sm font-medium"
+            >
+              About
+            </Link>
+            <Link
+              href="/contact"
+              className="text-foreground/80 hover:text-primary transition-colors text-sm font-medium"
+            >
               Contact
             </Link>
 
             {user ? (
-              <div className="flex items-center gap-4 border-l border-border pl-6">
-                <Link
+              <div className="flex items-center gap-3 border-l border-white/10 pl-6">
+                <GlassButton
                   href={dashboardLink}
-                  className="text-sm font-medium text-primary hover:underline"
+                  size="sm"
+                  variant="outline"
+                  className="!text-xs font-semibold"
                 >
                   {role === "ADMIN" ? "Admin Panel" : role === "FREELANCER" ? "Creator Hub" : "Dashboard"}
-                </Link>
+                </GlassButton>
                 <button
                   onClick={handleSignOut}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
                 >
                   Sign Out
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-4 border-l border-border pl-6">
+              <div className="flex items-center gap-3 border-l border-white/10 pl-6">
                 <Link
                   href="/auth/signin"
-                  className="text-sm font-medium text-primary hover:underline"
+                  className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
                 >
                   Sign In
                 </Link>
-                <Link
+                <GlassButton
                   href="/auth/signup"
-                  className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  size="sm"
+                  variant="filled"
+                  icon={<Sparkles className="w-3.5 h-3.5" />}
+                  className="!text-xs font-semibold"
                 >
-                  Join Us
-                </Link>
+                  Get Started
+                </GlassButton>
               </div>
             )}
           </nav>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={toggleMenu}
+            className="md:hidden p-2 rounded-xl glass-card text-foreground hover:text-primary transition-colors"
+            aria-label="Open navigation menu"
+          >
+            {isMenuOpen ? <MenuX className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
+          </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Dropdown */}
         {isMenuOpen && (
-          <div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm">
-            <div className="flex flex-col h-full p-6 pt-20 gap-6">
-              <button
+          <div className="md:hidden mt-2 p-5 rounded-2xl glass-card-elevated border border-white/10 shadow-2xl backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+            <nav className="flex flex-col gap-3">
+              <Link
+                href="/"
                 onClick={toggleMenu}
-                className="absolute top-6 right-6 p-2"
-                aria-label="Close navigation menu"
+                className="py-2 px-3 rounded-lg hover:bg-white/5 text-foreground font-medium text-sm transition-colors"
               >
-                <MenuX className="w-6 h-6" />
-              </button>
-              <nav className="flex flex-col gap-4">
-                <Link href="/" onClick={toggleMenu} className="block py-2 px-4 hover:bg-primary/10 text-primary transition-colors font-medium">
-                  Home
-                </Link>
-                <Link href="/about" onClick={toggleMenu} className="block py-2 px-4 hover:bg-primary/10 text-primary transition-colors font-medium">
-                  About
-                </Link>
-                <Link href="/services" onClick={toggleMenu} className="block py-2 px-4 hover:bg-primary/10 text-primary transition-colors font-medium">
-                  Services
-                </Link>
-                <Link href="/portfolio" onClick={toggleMenu} className="block py-2 px-4 hover:bg-primary/10 text-primary transition-colors font-medium">
-                  Portfolio
-                </Link>
-                <Link href="/contact" onClick={toggleMenu} className="block py-2 px-4 hover:bg-primary/10 text-primary transition-colors font-medium">
-                  Contact
-                </Link>
+                Home
+              </Link>
+              <Link
+                href="/explore"
+                onClick={toggleMenu}
+                className="py-2 px-3 rounded-lg hover:bg-white/5 text-primary font-medium text-sm transition-colors flex items-center justify-between"
+              >
+                <span>Explore Creators</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary">Marketplace</span>
+              </Link>
+              <Link
+                href="/services"
+                onClick={toggleMenu}
+                className="py-2 px-3 rounded-lg hover:bg-white/5 text-foreground font-medium text-sm transition-colors"
+              >
+                Services
+              </Link>
+              <Link
+                href="/portfolio"
+                onClick={toggleMenu}
+                className="py-2 px-3 rounded-lg hover:bg-white/5 text-foreground font-medium text-sm transition-colors"
+              >
+                Portfolio
+              </Link>
+              <Link
+                href="/about"
+                onClick={toggleMenu}
+                className="py-2 px-3 rounded-lg hover:bg-white/5 text-foreground font-medium text-sm transition-colors"
+              >
+                About
+              </Link>
+              <Link
+                href="/contact"
+                onClick={toggleMenu}
+                className="py-2 px-3 rounded-lg hover:bg-white/5 text-foreground font-medium text-sm transition-colors"
+              >
+                Contact
+              </Link>
 
-                <div className="border-t border-border pt-4 mt-2">
-                  {user ? (
-                    <>
-                      <Link
-                        href={dashboardLink}
-                        onClick={toggleMenu}
-                        className="block py-2 px-4 font-medium text-primary"
-                      >
-                        {role === "ADMIN" ? "Admin Panel" : role === "FREELANCER" ? "Creator Hub" : "Dashboard"}
-                      </Link>
-                      <button
-                        onClick={() => {
-                          handleSignOut();
-                          toggleMenu();
-                        }}
-                        className="block w-full text-left py-2 px-4 text-muted-foreground"
-                      >
-                        Sign Out
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <Link
-                        href="/auth/signin"
-                        onClick={toggleMenu}
-                        className="block py-2 px-4 font-medium text-primary"
-                      >
-                        Sign In
-                      </Link>
-                      <Link
-                        href="/auth/signup"
-                        onClick={toggleMenu}
-                        className="block py-2 px-4 font-medium text-muted-foreground"
-                      >
-                        Create an Account
-                      </Link>
-                    </>
-                  )}
-                </div>
-              </nav>
-            </div>
+              <div className="border-t border-white/10 pt-3 mt-1 flex flex-col gap-2">
+                {user ? (
+                  <>
+                    <GlassButton
+                      href={dashboardLink}
+                      variant="filled"
+                      size="sm"
+                      className="w-full justify-center"
+                    >
+                      {role === "ADMIN" ? "Admin Panel" : role === "FREELANCER" ? "Creator Hub" : "Dashboard"}
+                    </GlassButton>
+                    <button
+                      onClick={() => {
+                        handleSignOut();
+                        toggleMenu();
+                      }}
+                      className="py-2 px-3 text-center text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <GlassButton
+                      href="/auth/signin"
+                      variant="glass"
+                      size="sm"
+                      className="w-full justify-center"
+                    >
+                      Sign In
+                    </GlassButton>
+                    <GlassButton
+                      href="/auth/signup"
+                      variant="filled"
+                      size="sm"
+                      className="w-full justify-center"
+                    >
+                      Get Started
+                    </GlassButton>
+                  </div>
+                )}
+              </div>
+            </nav>
           </div>
         )}
       </div>

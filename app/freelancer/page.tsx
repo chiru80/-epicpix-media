@@ -2,6 +2,8 @@ import { createServerSupabaseClient } from "@/lib/supabase";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { formatINRSimple } from "@/lib/utils";
+import { Sparkles, Briefcase, CheckCircle2, Clock, DollarSign, Star, ShieldCheck, ArrowRight, Upload } from "lucide-react";
+import { GlassCard, GlassPanel, GlassBadge, GlassButton } from "@/components/ui/glisse";
 
 export const dynamic = "force-dynamic";
 
@@ -34,106 +36,168 @@ export default async function FreelancerDashboardPage() {
     console.error("Freelancer data error:", err);
   }
 
+  const activeOrdersCount = assignedOrders.filter((o) => o.status !== "completed" && o.status !== "cancelled").length;
+  const completedDeliveriesCount = assignedOrders.filter((o) => o.status === "completed").length;
+  const estimatedRevenue = assignedOrders
+    .filter((o) => o.status === "completed" || o.payment_status === "paid")
+    .reduce((sum, o) => sum + (Number(o.base_price) || 0), 0);
+
   return (
-    <main className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-background py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        {/* Creator Hub Header */}
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-10">
           <div>
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-              Creator Hub
+            <GlassBadge variant="primary" size="default" className="mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span>Creator Production Hub</span>
+            </GlassBadge>
+            <h1 className="text-3xl sm:text-4xl font-display font-bold text-foreground">
+              Welcome, {user.user_metadata?.full_name || user.email?.split("@")[0]}
             </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Welcome back, {user.user_metadata?.full_name || user.email}
+            <p className="text-xs text-muted-foreground mt-1">
+              Deliver assigned client briefs, manage revisions, and track escrow payouts.
             </p>
           </div>
-          <div className="flex gap-3">
-            <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-              {profile?.verified ? "✓ Verified Creator" : "Active Creator"}
-            </span>
+
+          <div className="flex items-center gap-2">
+            <GlassBadge variant={profile?.verified ? "primary" : "default"} size="default">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 mr-1" />
+              <span>{profile?.verified ? "Verified Creator" : "Active Creator"}</span>
+            </GlassBadge>
+            <GlassBadge variant="success" size="default">
+              ● {profile?.availability || "Available for Bookings"}
+            </GlassBadge>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-          <div className="p-6 rounded-xl border border-border bg-card shadow-sm">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-              Assigned Orders
-            </h3>
-            <p className="text-3xl font-bold text-foreground">{assignedOrders.length}</p>
-          </div>
+        {/* 4 Metric Glass Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+          <GlassCard variant="interactive" className="p-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+                Earned Revenue
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <DollarSign className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-2xl font-display font-bold text-foreground">{formatINRSimple(estimatedRevenue)}</p>
+            <span className="text-[10px] text-emerald-400 mt-1 block">Cleared & In Escrow</span>
+          </GlassCard>
 
-          <div className="p-6 rounded-xl border border-border bg-card shadow-sm">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-              Completed Deliveries
-            </h3>
-            <p className="text-3xl font-bold text-primary">
-              {assignedOrders.filter((o) => o.status === "completed").length}
-            </p>
-          </div>
+          <GlassCard variant="interactive" className="p-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+                Active Projects
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                <Briefcase className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-3xl font-display font-bold text-foreground">{activeOrdersCount}</p>
+            <span className="text-[10px] text-sky-400 mt-1 block">In Production Queue</span>
+          </GlassCard>
 
-          <div className="p-6 rounded-xl border border-border bg-card shadow-sm">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-              Rating
-            </h3>
-            <p className="text-3xl font-bold text-foreground">
+          <GlassCard variant="interactive" className="p-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+                Completed
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-3xl font-display font-bold text-foreground">{completedDeliveriesCount}</p>
+            <span className="text-[10px] text-muted-foreground mt-1 block">Delivered Masters</span>
+          </GlassCard>
+
+          <GlassCard variant="interactive" className="p-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+                Creator Rating
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                <Star className="w-4 h-4 fill-amber-400" />
+              </div>
+            </div>
+            <p className="text-3xl font-display font-bold text-foreground">
               ★ {profile?.rating ? Number(profile.rating).toFixed(1) : "5.0"}
             </p>
-          </div>
+            <span className="text-[10px] text-amber-400 mt-1 block">Top Tier Ranking</span>
+          </GlassCard>
         </div>
 
-        {/* Assigned Orders */}
-        <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-border flex justify-between items-center">
-            <h2 className="text-xl font-display font-semibold text-foreground">Assigned Tasks & Deliveries</h2>
-            <span className="text-xs text-muted-foreground font-medium">Supabase RLS Protected</span>
+        {/* Assigned Orders Queue */}
+        <GlassPanel className="p-7">
+          <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
+            <div>
+              <h2 className="text-xl font-display font-bold text-foreground">Assigned Tasks & Deliveries</h2>
+              <span className="text-xs text-muted-foreground">Protected by Supabase Row Level Security</span>
+            </div>
           </div>
 
           {assignedOrders.length === 0 ? (
-            <div className="p-12 text-center">
-              <p className="text-muted-foreground">No orders currently assigned to your queue.</p>
-              <p className="text-xs text-muted-foreground mt-1">Admin will assign incoming client bookings here.</p>
+            <div className="text-center py-16">
+              <Briefcase className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-40" />
+              <h3 className="text-lg font-display font-semibold text-foreground mb-1">Queue is Clear</h3>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                No orders are currently assigned to your profile. New client orders matched with your skills will appear here.
+              </p>
             </div>
           ) : (
-            <div className="divide-y divide-border">
-              {assignedOrders.map((order) => (
-                <div key={order.id} className="p-6 flex flex-col md:flex-row justify-between gap-4 hover:bg-muted/30 transition-colors">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="font-semibold text-foreground capitalize">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-white/10 text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">
+                    <th className="pb-3 px-3">Order ID</th>
+                    <th className="pb-3 px-3">Service</th>
+                    <th className="pb-3 px-3">Client Notes</th>
+                    <th className="pb-3 px-3">Status</th>
+                    <th className="pb-3 px-3">Payout</th>
+                    <th className="pb-3 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {assignedOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-white/5 transition-colors">
+                      <td className="py-4 px-3 font-mono font-medium text-foreground">
+                        #{order.id.slice(0, 8)}
+                      </td>
+                      <td className="py-4 px-3 font-medium text-foreground capitalize">
                         {order.service_type?.replace(/_/g, " ")}
-                      </span>
-                      <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-medium uppercase">
-                        {order.status}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Order ID: #{order.id.slice(0, 8)}</p>
-                    {order.project_description && (
-                      <p className="text-sm text-foreground/80 mt-2 max-w-xl">
-                        {order.project_description}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col md:items-end justify-between gap-2">
-                    <div className="text-base font-semibold text-foreground">
-                      Total: {formatINRSimple(order.total_price)}
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      <Link
-                        href={`/order/confirmation/${order.id}`}
-                        className="px-3 py-1.5 rounded text-xs font-medium border border-border hover:bg-muted text-foreground"
-                      >
-                        Order Brief
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      </td>
+                      <td className="py-4 px-3 text-muted-foreground max-w-xs truncate">
+                        {order.client_notes || "Standard brief"}
+                      </td>
+                      <td className="py-4 px-3">
+                        <GlassBadge
+                          variant={order.status === "completed" ? "success" : "primary"}
+                          size="sm"
+                        >
+                          {order.status}
+                        </GlassBadge>
+                      </td>
+                      <td className="py-4 px-3 font-semibold text-foreground">
+                        {formatINRSimple(order.base_price)}
+                      </td>
+                      <td className="py-4 px-3 text-right">
+                        <Link
+                          href={`/order/confirmation/${order.id}`}
+                          className="inline-flex items-center gap-1 text-primary hover:underline font-semibold text-xs"
+                        >
+                          <span>Manage Delivery</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-        </div>
+        </GlassPanel>
       </div>
     </main>
   );
 }
-

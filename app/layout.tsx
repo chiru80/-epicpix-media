@@ -14,10 +14,11 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="bg-background text-foreground font-body antialiased min-h-screen flex flex-col" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <body className="bg-background text-foreground font-body antialiased min-h-screen flex flex-col relative" suppressHydrationWarning>
+        <div className="ambient-glow-mesh" aria-hidden="true" />
         <Header />
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 relative z-10">{children}</div>
         <Footer />
       </body>
     </html>

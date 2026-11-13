@@ -3,7 +3,9 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Mail, Lock, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { GlassPanel, GlassBadge, GlassButton } from "@/components/ui/glisse";
 
 function SignInContent() {
   const router = useRouter();
@@ -53,33 +55,42 @@ function SignInContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-display font-bold text-foreground">
-          Sign In to EpicPix Media
-        </h2>
-        <p className="mt-2 text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link href="/auth/signup" className="font-medium text-primary hover:underline">
-            Sign up
-          </Link>
-        </p>
+        <div className="text-center mb-6">
+          <GlassBadge variant="primary" size="default" className="mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span>Secure Access</span>
+          </GlassBadge>
+          <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground">
+            Sign In to EpicPix
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link href="/auth/signup" className="font-medium text-primary hover:underline">
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-card py-8 px-4 shadow-sm border border-border sm:rounded-xl sm:px-10">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <GlassPanel glow className="p-8 sm:p-10 shadow-2xl">
           {error && (
-            <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs leading-relaxed">
               {error}
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground">
-                Email address
+              <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-foreground/80 mb-2">
+                Email Address
               </label>
-              <div className="mt-1">
+              <div className="relative">
+                <div className="absolute left-3.5 top-3 text-muted-foreground pointer-events-none">
+                  <Mail className="w-4 h-4" />
+                </div>
                 <input
                   id="email"
                   name="email"
@@ -88,17 +99,25 @@ function SignInContent() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="you@example.com"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl bg-black/40 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all backdrop-blur-md"
+                  placeholder="name@company.com"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground">
-                Password
-              </label>
-              <div className="mt-1">
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-foreground/80">
+                  Password
+                </label>
+                <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline">
+                  Forgot?
+                </Link>
+              </div>
+              <div className="relative">
+                <div className="absolute left-3.5 top-3 text-muted-foreground pointer-events-none">
+                  <Lock className="w-4 h-4" />
+                </div>
                 <input
                   id="password"
                   name="password"
@@ -107,7 +126,7 @@ function SignInContent() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl bg-black/40 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all backdrop-blur-md"
                   placeholder="••••••••"
                 />
               </div>
@@ -116,12 +135,26 @@ function SignInContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2.5 px-4 rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+              className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:brightness-110 shadow-lg shadow-primary/25 border border-primary/40 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? (
+                <span>Signing in...</span>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
-        </div>
+
+          <div className="mt-6 pt-6 border-t border-white/5 text-center">
+            <span className="text-[11px] text-muted-foreground flex items-center justify-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Protected by Supabase Auth with Row Level Security</span>
+            </span>
+          </div>
+        </GlassPanel>
       </div>
     </div>
   );
@@ -132,7 +165,7 @@ export default function SignInPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground text-sm">Loading sign-in...</p>
         </div>
       }
     >
