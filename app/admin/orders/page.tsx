@@ -1,11 +1,30 @@
-import { createClient } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminOrdersPage() {
-  const supabase = createClient();
+  const supabase = await createServerSupabaseClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+
+  if (!authUser) {
+    redirect("/auth/signin?redirect_url=/admin/orders");
+  }
+
+  const metaRole = (authUser.user_metadata?.role || "").toUpperCase();
+  if (metaRole !== "ADMIN") {
+    const { data: userProfile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", authUser.id)
+      .single();
+
+    if ((userProfile?.role || "").toUpperCase() !== "ADMIN") {
+      redirect("/");
+    }
+  }
 
   let orders: any[] = [];
   let count = 0;
@@ -36,95 +55,105 @@ export default async function AdminOrdersPage() {
   }
 
   return (
-    <section className="py-12 md:py-20 bg-background">
+    <section className="py-12 md:py-20 bg-background min-h-screen">
       <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-5xl md:text-6xl font-display mb-8">
-          Orders Management
-        </h1>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground">
+              Orders Management
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1">Review, track, and update client orders</p>
+          </div>
+          <Link
+            href="/admin"
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            ← Back to Dashboard
+          </Link>
+        </div>
 
         {fetchError && (
           <div className="mb-6 p-4 rounded-lg bg-warning/10 border border-warning/30 text-warning text-sm">
-            Database connection note: {fetchError}. Showing cached or empty view.
+            Database note: {fetchError}. Showing cached or empty view.
           </div>
         )}
 
         <div className="flex justify-between items-center mb-8">
-          <h2 className="font-display">All Orders ({count || 0})</h2>
+          <h2 className="font-display font-semibold text-lg">All Orders ({count || 0})</h2>
 
           {/* Bulk actions dropdown */}
           <div className="relative">
-            <select className="select select-sm border rounded px-3 py-1.5 text-sm bg-card text-foreground">
-              <option>Bulk action</option>
-              <option>Change status to pending</option>
-              <option>Export selected</option>
+            <select className="select select-sm border border-border rounded px-3 py-1.5 text-sm bg-card text-foreground">
+              <option>Bulk actions</option>
+              <option>Export CSV</option>
             </select>
           </div>
         </div>
 
         {orders.length === 0 && (
-          <p className="text-muted-foreground">
-            No orders yet.{" "}
-            <Link href="/services" className="text-accent hover:underline">
-              Add your first service
+          <div className="p-8 border border-border rounded-xl bg-card text-center">
+            <p className="text-muted-foreground mb-4">No orders placed yet.</p>
+            <Link href="/services" className="text-primary hover:underline font-medium text-sm">
+              Browse Services
             </Link>
-          </p>
+          </div>
         )}
 
         {orders.length > 0 && (
-          <div className="overflow-x-auto rounded-lg bg-card">
+          <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
             <table className="min-w-full text-sm">
               <thead>
-                <tr>
-                  <th className="text-left py-3 px-4 font-display font-medium text-muted-foreground border-b">
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
                     #
                   </th>
-                  <th className="text-left py-3 px-4 font-display font-medium text-muted-foreground border-b">
+                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
                     Client
                   </th>
-                  <th className="text-left py-3 px-4 font-display font-medium text-muted-foreground border-b">
+                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
                     Service
                   </th>
-                  <th className="text-left py-3 px-4 font-display font-medium text-muted-foreground border-b">
+                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
                     Total
                   </th>
-                  <th className="text-left py-3 px-4 font-display font-medium text-muted-foreground border-b">
+                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
                     Status
                   </th>
-                  <th className="text-left py-3 px-4 font-display font-medium text-muted-foreground border-b">
+                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
                     Payment
                   </th>
-                  <th className="text-left py-3 px-4 font-display font-medium text-muted-foreground border-b">
+                  <th className="text-left py-3.5 px-4 font-display font-medium text-muted-foreground">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-border">
                 {orders.map((order, index) => (
                   <tr
                     key={order.id}
-                    className="border-b hover:bg-card/50 transition-colors"
+                    className="hover:bg-card/50 transition-colors"
                   >
-                    <td className="py-4 px-4">{index + 1}</td>
+                    <td className="py-4 px-4 text-muted-foreground">{index + 1}</td>
                     <td className="py-4 px-4">
-                      <div className="font-medium">
+                      <div className="font-medium text-foreground">
                         {order.clients?.name || "Client"}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {order.clients?.company || order.clients?.email || "—"}
+                        {order.clients?.company || order.clients?.email || order.client_notes || "—"}
                       </p>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="capitalize text-muted-foreground">
+                      <span className="capitalize font-medium text-foreground">
                         {getServiceName(order.service_type)}
                       </span>
                       {order.package_tier && (
-                        <span className="text-xs ml-1 bg-primary/10 text-primary rounded px-1">
-                          /{order.package_tier}
+                        <span className="text-xs ml-1 bg-primary/10 text-primary rounded px-1.5 py-0.5">
+                          {order.package_tier}
                         </span>
                       )}
                     </td>
-                    <td className="py-4 px-4">
-                      <span className="font-medium">₹{order.total_price}</span>
+                    <td className="py-4 px-4 font-semibold text-foreground">
+                      ₹{Number(order.total_price).toLocaleString("en-IN")}
                     </td>
                     <td className="py-4 px-4">
                       <StatusBadge status={order.status} />
@@ -133,15 +162,13 @@ export default async function AdminOrdersPage() {
                       <PaymentBadge status={order.payment_status} />
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/order/confirmation/${order.id}`}
-                          className="text-primary text-sm hover:underline"
-                          aria-label="View order"
-                        >
-                          View
-                        </Link>
-                      </div>
+                      <Link
+                        href={`/order/confirmation/${order.id}`}
+                        className="text-primary text-sm font-medium hover:underline"
+                        aria-label="View order"
+                      >
+                        View Details
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -163,9 +190,9 @@ function StatusBadge({
   const variants: Record<string, string> = {
     pending: "bg-gray-100 text-gray-800",
     approved: "bg-primary/10 text-primary",
-    in_progress: "bg-primary/10 text-primary",
+    in_progress: "bg-blue-100 text-blue-800",
     review: "bg-warning/10 text-warning",
-    revisions: "bg-primary/10 text-primary",
+    revisions: "bg-purple-100 text-purple-800",
     completed: "bg-success/10 text-success",
     cancelled: "bg-destructive/10 text-destructive",
   };
@@ -194,10 +221,11 @@ function PaymentBadge({
 }) {
   const variants: Record<string, string> = {
     pending: "bg-gray-100 text-gray-800",
-    deposit_paid: "bg-primary/10 text-primary",
+    payment_pending: "bg-warning/10 text-warning",
+    deposit_paid: "bg-blue-100 text-blue-800",
     paid: "bg-success/10 text-success",
     refunded: "bg-destructive/10 text-destructive",
-    failed: "bg-warning/10 text-warning",
+    failed: "bg-destructive/10 text-destructive",
     pending_verification: "bg-warning/10 text-warning",
   };
 
@@ -217,10 +245,9 @@ function PaymentBadge({
   );
 }
 
-// Helper functions
 const getServiceName = (service: string): string => {
   const names: Record<string, string> = {
-    thumbnail: "Thumbnail",
+    thumbnail: "Thumbnail Creation",
     video_basic: "Video Editing (Basic)",
     video_pro: "Video Editing (Pro)",
     video_premium: "Video Editing (Premium)",

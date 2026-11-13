@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-04-10",
-});
+const getStripe = () => {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy_key", {
+    apiVersion: "2024-04-10" as any,
+  });
+};
 
 // Webhook endpoint for Stripe payment events
 export async function POST(request: Request) {
+  const stripe = getStripe();
   const signature = request.headers.get("stripe-signature") as string;
 
   let event: Stripe.Event;

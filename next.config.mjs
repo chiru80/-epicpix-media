@@ -10,7 +10,11 @@ const nextConfig = {
   // App Router enabled by default
   // Image optimization for Vercel
   images: {
-    domains: ["res.cloudinary.com", "images.unsplash.com", "lh3.googleusercontent.com"],
+    remotePatterns: [
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+    ],
   },
   // Disable bundle analyzer for faster builds
   // poweredByHeader: false,

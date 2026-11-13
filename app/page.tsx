@@ -43,7 +43,7 @@ export default function HomePage() {
               Featured Work
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              We've collaborated with leading brands across industries to create compelling
+              We&apos;ve collaborated with leading brands across industries to create compelling
               visual stories that connect with audiences.
             </p>
           </div>
@@ -104,10 +104,10 @@ export default function HomePage() {
       <section className="py-24 md:py-32 bg-primary/5 text-primary">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white/20 rounded-3xl p-8 backdrop-blur-sm text-center">
-            <h2 className="text-4xl md:text-5xl font-display mb-6">Let's Create Something Amazing</h2>
+            <h2 className="text-4xl md:text-5xl font-display mb-6">Let&apos;s Create Something Amazing</h2>
             <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
               Ready to elevate your brand with professional media production? Get in touch
-              today and let's discuss how we can bring your vision to life.
+              today and let&apos;s discuss how we can bring your vision to life.
             </p>
             <Link
               href="/contact"

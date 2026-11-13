@@ -10,7 +10,7 @@ export default function ContactPage() {
               Get in Touch
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Ready to start your next project? Fill out the form and we'll get back to
+              Ready to start your next project? Fill out the form and we&apos;ll get back to
               you within 24 hours.
             </p>
           </div>

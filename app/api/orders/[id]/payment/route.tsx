@@ -1,78 +1,134 @@
-import { createClient } from "@/lib/supabase";
-import Stripe from "stripe";
+import { createServiceClient } from "@/lib/supabase";
+import { verifyOrderOwnership } from "@/lib/api-utils";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-04-10" ,
-});
+/**
+ * Order-specific payment initiation endpoint
+ *
+ * SECURITY: This endpoint creates a PENDING payment record.
+ * Actual payment verification MUST happen via webhook from YouPI gateway.
+ *
+ * The flow is:
+ * 1. Client POST to /api/orders/{id}/payment with amount
+ * 2. Server creates payment record with status PENDING
+ * 3. Payment is processed externally via YouPI gateway
+ * 4. YouPI sends webhook to /api/webhooks/youpi/route.tsx
+ * 5. Webhook verifies payment and updates order status to PAID
+ *
+ * DO NOT mark orders as paid here - only create the pending record.
+ */
+export async function POST(request: Request) {
+  const url = new URL(request.url);
+  const orderId = url.pathname.split("/")[4];
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  const supabase = createServiceClient();
+
   try {
-    const { id } = await params;
-    const { amount, paymentType } = await request.json();
+    const body = await request.json();
+    const { amount, paymentMethod, gatewayOrderId } = body;
 
-    const supabase = createClient();
-
-    // Create PaymentIntent in INR with Indian payment methods
-    // Stripe supports UPI, cards (RuPay/Visa/MasterCard), net banking, wallets for INR
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // in paise
-      currency: "inr",
-      metadata: {
-        order_id: id,
-        client_id: "",
-        project_type: "",
-        payment_type: paymentType,
-      },
-      // Automatic payment methods (UPI, cards, net banking, wallets)
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    });
-
-    // If deposit, mark order accordingly
-    if (paymentType === "deposit") {
-      const { error: updateError } = await supabase
-        .from("orders")
-        .update({
-          payment_status: "deposit_paid",
-          deposit_amount: Math.round(amount),
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", id);
-
-      if (updateError) throw updateError;
+    if (!orderId) {
+      return new Response(
+        JSON.stringify({ error: "Invalid order ID" }),
+        { status: 400 }
+      );
     }
 
-    return new Response(
-      JSON.stringify({
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id,
-        amount,
-        currency: "inr",
-        orderId: id
-      }),
-      { status: 200 }
-    );
+    if (!amount || Number(amount) <= 0) {
+      return new Response(
+        JSON.stringify({ error: "Invalid amount. Payment amount is required." }),
+        { status: 400 }
+      );
+    }
+
+    // Verify order exists
+    const { valid, order, error: verifyError } = await verifyOrderOwnership(orderId);
+    if (!valid) {
+      return new Response(
+        JSON.stringify({ error: verifyError || "Order not found" }),
+        { status: 404 }
+      );
+    }
+
+    // Validate amount matches order total (with small tolerance for rounding)
+    const orderTotal = Number(order.total_price);
+    const paymentAmount = Number(amount);
+
+    if (Math.abs(paymentAmount - orderTotal) > 1) {
+      return new Response(
+        JSON.stringify({ error: `Amount mismatch. Expected: ₹${orderTotal.toFixed(2)}, Received: ₹${paymentAmount.toFixed(2)}` }),
+        { status: 400 }
+      );
+    }
+
+    // Check for duplicate pending payment
+    const { data: existingPayment } = await supabase
+      .from("payments")
+      .select("id, status")
+      .eq("order_id", orderId)
+      .eq("status", "pending_verification")
+      .single();
+
+    if (existingPayment) {
+      return new Response(JSON.stringify({
+        success: true,
+        message: "Payment already in progress. Check back for updates.",
+        paymentId: existingPayment.id,
+        orderId,
+      }), { status: 200 });
+    }
+
+    // Create PENDING payment record - NOT completed!
+    // Actual payment verification happens via webhook from YouPI
+    const paymentRecord = {
+      order_id: orderId,
+      amount: paymentAmount,
+      payment_method: paymentMethod || "upi",
+      status: "pending_verification", // CRITICAL: Not 'completed'!
+      verification_status: "pending",
+      gateway: "YOUPI",
+      gateway_order_id: gatewayOrderId || `order_${orderId}_${Date.now()}`,
+      created_at: new Date().toISOString(),
+    };
+
+    const { data: payment, error } = await supabase
+      .from("payments")
+      .insert([paymentRecord])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Payment record creation failed:", error);
+      return new Response(
+        JSON.stringify({ error: "Failed to create payment record. Please try again." }),
+        { status: 500 }
+      );
+    }
+
+    // Update order status to indicate payment pending verification
+    await supabase
+      .from("orders")
+      .update({
+        payment_status: "pending_verification",
+        payment_method: paymentMethod,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", orderId);
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: "Payment initiated. Complete payment via YouPI gateway.",
+      paymentId: payment?.id,
+      orderId: orderId,
+      gatewayOrder: payment?.gateway_order_id,
+      amount: paymentAmount,
+      status: "pending_verification",
+    }), { status: 200 });
 
   } catch (error) {
-    console.error("Payment intent error:", error);
+    console.error("Payment initiation error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "Payment processing failed. Please try again." }),
       { status: 500 }
     );
   }
-}
-
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  // This endpoint is POST only
-  return new Response(JSON.stringify({ error: "Method not allowed" }), {
-    status: 405,
-    headers: { "Content-Type": "application/json" },
-  });
 }

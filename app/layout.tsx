@@ -1,5 +1,7 @@
 import "../globals.css";
 import type { ReactNode } from "react";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 export const metadata = {
   title: "EpicPix Media - Professional Media Production Portfolio",
@@ -12,9 +14,11 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-background font-body antialiased">
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-background text-foreground font-body antialiased min-h-screen flex flex-col" suppressHydrationWarning>
+        <Header />
+        <div className="flex-1">{children}</div>
+        <Footer />
       </body>
     </html>
   );

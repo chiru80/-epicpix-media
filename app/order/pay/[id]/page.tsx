@@ -7,8 +7,12 @@ import { formatINRSimple } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 import { ChevronDown } from "lucide-react";
 
+import Link from "next/link";
+
 export default function OrderPaymentPage({ params }: { params: Promise<{ id: string }> }) {
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<any>(null);
   const [paymentSubmitted, setPaymentSubmitted] = useState(false);
@@ -24,25 +28,58 @@ export default function OrderPaymentPage({ params }: { params: Promise<{ id: str
 
   useEffect(() => {
     const fetchOrder = async () => {
-      const { id } = await params;
-      const supabase = createClient();
-      const { data: orderData, error: orderError } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("id", id)
-        .single();
+      try {
+        const { id } = await params;
+        const supabase = createClient();
+        const { data: orderData, error: orderError } = await supabase
+          .from("orders")
+          .select("*")
+          .eq("id", id)
+          .single();
 
-      if (orderError) {
-        console.error(orderError);
-        return;
+        if (orderError) {
+          console.error(orderError);
+          setFetchError("Order not found or database unavailable");
+        } else {
+          setOrder(orderData);
+        }
+      } catch (err: any) {
+        setFetchError(err.message || "Failed to load order");
+      } finally {
+        setFetchLoading(false);
       }
-      setOrder(orderData);
     };
     fetchOrder();
   }, [params]);
 
-  if (!order) {
-    return <div className="py-12 md:py-20 bg-background">Loading...</div>;
+  if (fetchLoading) {
+    return (
+      <div className="min-h-screen bg-background p-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="rounded-full border-b-2 border-primary mx-auto mb-6 animate-spin" style={{ width: 40, height: 40 }}></div>
+          <p className="text-muted-foreground">Loading order details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order || fetchError) {
+    return (
+      <div className="min-h-screen bg-background p-8 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center">
+          <h2 className="text-2xl font-display mb-4">Order Not Found</h2>
+          <p className="text-muted-foreground mb-6">
+            {fetchError || "The requested order could not be located."}
+          </p>
+          <Link
+            href="/services"
+            className="inline-block px-6 py-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            Browse Services
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -117,7 +154,7 @@ export default function OrderPaymentPage({ params }: { params: Promise<{ id: str
             <div className="mt-8 p-4 border border-accent/30 rounded-xl bg-accent/5">
               <p className="text-accent">
                 Payment details submitted successfully! Our team will verify your payment within 24 hours.
-                You'll receive a confirmation email once verified.
+                You&apos;ll receive a confirmation email once verified.
               </p>
             </div>
           )}

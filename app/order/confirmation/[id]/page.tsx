@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { formatINRSimple, calculateDepositINR, calculateTotalWithGSTINR } from "@/lib/utils";
 import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 export default async function OrderConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = createClient();
@@ -17,10 +19,16 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
     .eq("id", id)
     .single();
 
-  if (error) throw error;
+  if (error || !order) {
+    notFound();
+  }
 
   // Mark as viewed
-  supabase.from("orders").update({ viewed_at: new Date().toISOString() }).eq("id", id);
+  try {
+    await supabase.from("orders").update({ viewed_at: new Date().toISOString() }).eq("id", id);
+  } catch (err) {
+    console.error("Could not update viewed_at:", err);
+  }
 
   const { deposit, remaining } = calculateDepositINR(order.total_price);
   const gstDetails = calculateTotalWithGSTINR(order.total_price);
@@ -137,7 +145,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
         {order.status === "completed" && (
           <p className="mt-8 text-center text-muted-foreground">
-            Thank you for your order! We'd love your feedback.
+            Thank you for your order! We&apos;d love your feedback.
           </p>
         )}
       </div>

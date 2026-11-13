@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className="border-t border-border bg-card">
@@ -18,39 +20,29 @@ export function Footer() {
             <h4 className="font-display text-sm mb-4">Navigation</h4>
             <ul className="space-y-2 text-muted-foreground text-sm">
               <li>
-                <a href="/"
-                  className="hover:text-primary transition-colors"
-                >
+                <Link href="/" className="hover:text-primary transition-colors">
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/about"
-                  className="hover:text-primary transition-colors"
-                >
+                <Link href="/about" className="hover:text-primary transition-colors">
                   About
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/services"
-                  className="hover:text-primary transition-colors"
-                >
+                <Link href="/services" className="hover:text-primary transition-colors">
                   Services
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/portfolio"
-                  className="hover:text-primary transition-colors"
-                >
+                <Link href="/portfolio" className="hover:text-primary transition-colors">
                   Portfolio
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/contact"
-                  className="hover:text-primary transition-colors"
-                >
+                <Link href="/contact" className="hover:text-primary transition-colors">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -60,39 +52,29 @@ export function Footer() {
             <h4 className="font-display text-sm mb-4">Services</h4>
             <ul className="space-y-2 text-muted-foreground text-sm">
               <li>
-                <a href="/services"
-                  className="hover:text-primary transition-colors"
-                >
+                <Link href="/services" className="hover:text-primary transition-colors">
                   Video Production
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/services"
-                  className="hover:text-primary transition-colors"
-                >
+                <Link href="/services" className="hover:text-primary transition-colors">
                   Photography
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/services"
-                  className="hover:text-primary transition-colors"
-                >
+                <Link href="/services" className="hover:text-primary transition-colors">
                   Content Creation
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/services"
-                  className="hover:text-primary transition-colors"
-                >
+                <Link href="/services" className="hover:text-primary transition-colors">
                   Post-Production
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/services"
-                  className="hover:text-primary transition-colors"
-                >
+                <Link href="/services" className="hover:text-primary transition-colors">
                   Drone Cinematography
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

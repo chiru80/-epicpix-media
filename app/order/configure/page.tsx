@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { z } from "zod";
 import { formatINR, formatINRSimple, calculateDepositINR, calculateTotalWithGSTINR } from "@/lib/utils";
 import { SERVICES_CATALOG } from "@/app/services/catalog";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 
 interface AddOn {
@@ -85,19 +85,25 @@ const initializeForm = (service: string): OrderFormState => ({
   rushDelivery: false,
 });
 
-export default function OrderConfigurationPage({
-  params,
-}: {
-  params: Promise<{ service?: string }>;
-}) {
+function OrderConfigurationContent() {
   const router = useRouter();
-  const [form, setForm] = useState<OrderFormState>(
-    initializeForm((params as any).service || "thumbnail")
+  const searchParams = useSearchParams();
+  const serviceParam = searchParams.get("service") || "thumbnail";
+
+  const [form, setForm] = useState<OrderFormState>(() =>
+    initializeForm(serviceParam)
   );
   const [total, setTotal] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Sync service from query param if changed
+  useEffect(() => {
+    if (serviceParam && serviceParam !== form.service && SERVICES_CATALOG[serviceParam as keyof typeof SERVICES_CATALOG]) {
+      setForm(initializeForm(serviceParam));
+    }
+  }, [serviceParam, form.service]);
 
   // Recalculate total when form changes
   useEffect(() => {
@@ -173,30 +179,40 @@ export default function OrderConfigurationPage({
       const { deposit, remaining } = calculateDepositINR(total);
       const gstDetails = calculateTotalWithGSTINR(total);
 
-      const { error, data } = await supabase.from("orders").insert({
-        client_id: "", // Will be set after auth
-        service_type: form.service,
-        package_tier: form.tier,
-        status: "pending",
-        payment_status: "pending",
-        base_price: getBasePrice(form.service),
-        add_ons_price: form.addOns.filter((a) => a.selected).reduce(
-          (sum, a) => sum + a.price,
-          0
-        ),
-        total_price: gstDetails.total, // Total with GST
-        deposit_percentage: 25,
-        deposit_amount: deposit,
-        remaining_balance: remaining,
-        project_description: form.projectDescription,
-        client_notes: `Client: ${form.clientName} (${form.clientEmail})`,
-        delivery_deadline: calculateDeadline(form.service, form.rushDelivery),
-      });
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+      const { error, data } = await supabase
+        .from("orders")
+        .insert({
+          client_id: currentUser?.id || null,
+          service_type: form.service,
+          package_tier: form.tier,
+          status: "pending",
+          payment_status: "pending",
+          base_price: getBasePrice(form.service),
+          add_ons_price: form.addOns.filter((a) => a.selected).reduce(
+            (sum, a) => sum + a.price,
+            0
+          ),
+          total_price: gstDetails.total, // Total with GST
+          deposit_percentage: 25,
+          deposit_amount: deposit,
+          remaining_balance: remaining,
+          project_description: form.projectDescription,
+          client_notes: `Client: ${form.clientName} (${form.clientEmail})`,
+          delivery_deadline: calculateDeadline(form.service, form.rushDelivery),
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
       // Redirect to payment page
-      router.push(`/order/pay/${data.id}`);
+      if (data?.id) {
+        router.push(`/order/pay/${data.id}`);
+      } else {
+        router.push("/services");
+      }
 
     } catch (err) {
       console.error("Order creation error:", err);
@@ -540,3 +556,20 @@ const getServiceDescription = (service: string): string => {
   const catalogService = SERVICES_CATALOG[service as keyof typeof SERVICES_CATALOG];
   return catalogService?.description || "";
 };
+
+export default function OrderConfigurationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background p-8 flex items-center justify-center">
+          <div className="text-center">
+            <div className="rounded-full border-b-2 border-primary mx-auto mb-6 animate-spin" style={{ width: 40, height: 40 }}></div>
+            <p className="text-muted-foreground">Loading order configuration...</p>
+          </div>
+        </div>
+      }
+    >
+      <OrderConfigurationContent />
+    </Suspense>
+  );
+}

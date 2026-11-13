@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function PortfolioPage() {
   return (
@@ -15,8 +16,8 @@ export default function PortfolioPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Project Card - Static for now, will be dynamic later */}
-            <article className="border rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            {/* Project Card 1 */}
+            <article className="border border-border rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-card">
               <Image
                 src="/images/portfolio-1.jpg"
                 alt="Corporate promotional video showcase"
@@ -26,16 +27,19 @@ export default function PortfolioPage() {
                 loading="lazy"
               />
               <div className="p-6">
-                <h3 className="font-display text-xl mb-2">Corporate Promo Video</h3>
+                <h3 className="font-display text-xl mb-2 text-foreground">Corporate Promo Video</h3>
                 <p className="text-sm text-muted-foreground">Acme Corp</p>
                 <div className="mt-4 flex justify-between items-center">
-                  <span className="text-muted-foreground text-xs">Video</span>
-                  <a href="/portfolio/corporate-promo" className="text-accent hover:underline text-sm">View case study</a>
+                  <span className="text-muted-foreground text-xs uppercase tracking-wider font-medium">Video</span>
+                  <Link href="/order/configure?service=video_pro" className="text-primary hover:underline text-sm font-medium">
+                    Order similar project →
+                  </Link>
                 </div>
               </div>
             </article>
 
-            <article className="border rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            {/* Project Card 2 */}
+            <article className="border border-border rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-card">
               <Image
                 src="/images/portfolio-2.jpg"
                 alt="Product photography portfolio"
@@ -45,16 +49,19 @@ export default function PortfolioPage() {
                 loading="lazy"
               />
               <div className="p-6">
-                <h3 className="font-display text-xl mb-2">Product Photography</h3>
+                <h3 className="font-display text-xl mb-2 text-foreground">Product Photography</h3>
                 <p className="text-sm text-muted-foreground">Luna Cosmetics</p>
                 <div className="mt-4 flex justify-between items-center">
-                  <span className="text-muted-foreground text-xs">Photography</span>
-                  <a href="/portfolio/product-photography" className="text-accent hover:underline text-sm">View case study</a>
+                  <span className="text-muted-foreground text-xs uppercase tracking-wider font-medium">Photography</span>
+                  <Link href="/services" className="text-primary hover:underline text-sm font-medium">
+                    Explore services →
+                  </Link>
                 </div>
               </div>
             </article>
 
-            <article className="border rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            {/* Project Card 3 */}
+            <article className="border border-border rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-card">
               <Image
                 src="/images/portfolio-3.jpg"
                 alt="Drone aerial cinematography reel"
@@ -64,11 +71,13 @@ export default function PortfolioPage() {
                 loading="lazy"
               />
               <div className="p-6">
-                <h3 className="font-display text-xl mb-2">Drone Cinematography</h3>
+                <h3 className="font-display text-xl mb-2 text-foreground">Drone Cinematography</h3>
                 <p className="text-sm text-muted-foreground">Coastal Properties</p>
                 <div className="mt-4 flex justify-between items-center">
-                  <span className="text-muted-foreground text-xs">Drone</span>
-                  <a href="/portfolio/drone-cinematography" className="text-accent hover:underline text-sm">View case study</a>
+                  <span className="text-muted-foreground text-xs uppercase tracking-wider font-medium">Drone</span>
+                  <Link href="/services" className="text-primary hover:underline text-sm font-medium">
+                    Explore services →
+                  </Link>
                 </div>
               </div>
             </article>

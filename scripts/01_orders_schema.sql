@@ -3,7 +3,7 @@
 
 -- Create the orders table
 create table if not exists public.orders (
-  id uuid not null references auth.users on delete cascade,
+  id uuid primary key default gen_random_uuid(),
   client_id uuid references public.clients(id),
   service_type text not null,
   -- Valid service types: 'thumbnail', 'video_editing_basic', 'video_editing_pro',
@@ -33,8 +33,7 @@ create table if not exists public.orders (
   project_description text,
   client_notes text,
   created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  constraint orders_pkey primary key (id)
+  updated_at timestamptz default now()
 );
 
 alter table public.orders enable row level security;
